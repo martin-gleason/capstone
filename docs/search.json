@@ -1,0 +1,72 @@
+[
+  {
+    "objectID": "case_study.html",
+    "href": "case_study.html",
+    "title": "Divvy and Chicago Congestion Data",
+    "section": "",
+    "text": "For this project, I examined the relationship between Divvy ridership and traffic congestion in Chicago. All of the data comes from the Chicago Open Data Portal, and all of the data cleaning steps were done in R. To provide structure to this project, I created the headings based on Google’s Data Analysis methodology, with a small change to showcase a community organizer’s idea on why leveraging data is a corner stone of our theory of change."
+  },
+  {
+    "objectID": "case_study.html#stakeholders",
+    "href": "case_study.html#stakeholders",
+    "title": "Divvy and Chicago Congestion Data",
+    "section": "Stakeholders",
+    "text": "Stakeholders\nAt a minimum, the stakeholders of this particular project would be:\n\n[The City of Chicago Department of Transportation]https://www.chicago.gov/city/en/depts/cdot.html\nThe Illinois Department of Transportation\nThe Cook County Department of Transportation and Highways\nCommunity Organizations in all 52 wards, examples of which are:\n\nBike Grid Now!\nSouthwest Environmental Alliance\n\nSpecific Alderman in City Government"
+  },
+  {
+    "objectID": "case_study.html#questions-for-the-data",
+    "href": "case_study.html#questions-for-the-data",
+    "title": "Divvy and Chicago Congestion Data",
+    "section": "Questions for the Data",
+    "text": "Questions for the Data\nThe scope of traffic congestion is difficult to define: In addition to lane patterns, population density, transit locations, and weather patterns, congestion will be impacted by road and CTA construction, sporting events, concerts, and conventions, and other seasonal activities. In addition to the open data portal, historical weather patterns and city events should be included in a larger analysis. Given the size and scope or the larger project, deconstruction into various sections is the most efficient way to define and answer the questions.\nAt a minimum, the stakeholders would want to know:\n\nWhat is the relationship between Divvy Ridership and congestion patterns in Chicago?\nWhat additional areas of research need to be included in the final analysis of Divvy’s impact on congestion."
+  },
+  {
+    "objectID": "case_study.html#caveats",
+    "href": "case_study.html#caveats",
+    "title": "Divvy and Chicago Congestion Data",
+    "section": "Caveats",
+    "text": "Caveats\nBecause the data is limited to Divvy and Traffic Congestion by region, a number of confounds exist, and could be addressed in other analysis teams – specifically data about events in Chicago, weather data, and construction data are not included in the Divvy or Congestion data set."
+  },
+  {
+    "objectID": "case_study.html#what-data-is-being-used",
+    "href": "case_study.html#what-data-is-being-used",
+    "title": "Divvy and Chicago Congestion Data",
+    "section": "What data is being used?",
+    "text": "What data is being used?\nThis case study limts the data to two data sets: The Divvy Ride Share and the City of Chicago Traffic Congestion by Region data set.\n\nDivvy\nThe data analyzed is 7,420,746 unique rides from 2018-03-09 to 2019-12-31. This represents a cross over of the most recent data between both data sets. These fields include:\n\n\n [1] \"trip_id\"           \"start_time\"        \"stop_time\"        \n [4] \"bike_id\"           \"trip_duration\"     \"from_station_id\"  \n [7] \"from_station_name\" \"to_station_id\"     \"to_station_name\"  \n[10] \"user_type\"         \"gender\"            \"birth_year\"       \n\n\nThe original data also includes GIS geography data that is separated into two other data sets: divvy_from and divvy_to. The data cleaning process that created these data sets is detailed in the [Making Simple Features] section of this document.\n\n\nCongestion Zones\n\n\n [1] \"time\"        \"region_id\"   \"speed\"       \"region\"      \"bus_count\"  \n [6] \"num_reads\"   \"hour\"        \"day_of_week\" \"month\"       \"description\"\n[11] \"record_id\"   \"west\"        \"east\"        \"south\"       \"north\"      \n[16] \"nw_location\" \"se_location\" \"start_year\" \n\n\nThe congestion zone data also contains regions where speed, time, and bus counts are measured - a total of 2,534,656 from 2018-03-09 to 2019-12-31. How this data was transformed into GIS features are documented in the Process section of this document."
+  },
+  {
+    "objectID": "case_study.html#metrics",
+    "href": "case_study.html#metrics",
+    "title": "Divvy and Chicago Congestion Data",
+    "section": "Metrics",
+    "text": "Metrics\nDetermining the relationship between Divvy riders and Chicago traffic patterns requires the following metrics:\n\nWhat are the Divvy rental patterns by:\n\nDay\nMonth\nCongestion Region\n\nWhat are the average speeds in congestion regions during weekday rush hour?\nHow many divvy rides begin or end in a congestion region?"
+  },
+  {
+    "objectID": "case_study.html#creating-the-congestion-zones",
+    "href": "case_study.html#creating-the-congestion-zones",
+    "title": "Divvy and Chicago Congestion Data",
+    "section": "Creating the Congestion Zones",
+    "text": "Creating the Congestion Zones\nThe congestion zones data set has GIS data, but it is not a GIS feature. This means that without significant transformation, no GIS analysis could be done. The following code chunk illustrates the issue:\n\nlibrary(tidyverse)\ncongestion_2018 %&gt;%\n  distinct(region_id, .keep_all = TRUE) |&gt;\n  arrange(region_id) |&gt;\n  select(region, west, east, south, north) |&gt;\n  head(19) |&gt;\n  gt::gt(caption = \"Each of the 19 Congestion Zones\") |&gt;\n  gt::tab_header(title = gt::md(\"**Chicago Congetion Zone**\")) |&gt;\n  gt::cols_label(region = \"Region\", \n                 west = \"West\", \n                 east = \"East\", \n                 south = \"South\", \n                 north = \"North\") |&gt;\n  gt::opt_stylize(style = 1, color = \"gray\") \n\n\n\n\n\n  Each of the 19 Congestion Zones\n  \n    \n      Chicago Congetion Zone\n    \n    \n    \n      Region\n      West\n      East\n      South\n      North\n    \n  \n  \n    Rogers Park - West Ridge\n-87.70964\n-87.65456\n41.99795\n42.02644\n    Far North West\n-87.84621\n-87.74746\n41.96067\n42.01910\n    North Park-Albany-Linconl Sq\n-87.74746\n-87.67459\n41.96067\n41.99795\n    Edge Water-Uptown\n-87.67459\n-87.64644\n41.96067\n41.99795\n    Dunning-Portage-Belmont Cragn\n-87.84621\n-87.74746\n41.90927\n41.96067\n    Irving Park-Avondale-North Ctr\n-87.74746\n-87.67459\n41.93184\n41.96067\n    Hermosa-Logan Square\n-87.74746\n-87.67459\n41.90927\n41.93184\n    Lincoln Park-Lake View\n-87.67459\n-87.61911\n41.91056\n41.96067\n    Austin\n-87.77595\n-87.74746\n41.86613\n41.90927\n    Humboldt-Garfield Prk E/W\n-87.74746\n-87.69162\n41.86613\n41.90927\n    West Town-Near West\n-87.69162\n-87.64721\n41.86613\n41.91056\n    Near North\n-87.64721\n-87.62308\n41.88886\n41.91140\n    Chicago Loop\n-87.64721\n-87.62308\n41.86613\n41.88886\n    Lawndale N/S\n-87.74746\n-87.68537\n41.82279\n41.86613\n    Bridgeport-McKinley-Lower West\n-87.68537\n-87.63632\n41.82279\n41.86613\n    Near South-Douglas\n-87.63632\n-87.59795\n41.82279\n41.86613\n    Midway-Garfield Rdg-Clearing\n-87.80219\n-87.74746\n41.76407\n41.82279\n    South West Side\n-87.74746\n-87.68373\n41.76407\n41.82279\n    New City-Englewood-W Englewood\n-87.68373\n-87.63632\n41.76407\n41.82279\n  \n  \n  \n\n\n\n\nEach region is bounded by either a point of Latitude or Longitude. To create an actual GIS feature the North and West, and the South and East columns, had to be combined to create a simple GIS feature.\n\nlibrary(sf)\nlibrary(tidyverse)\nlibrary(gt)\n\n# a for loop that identifies the east, west, north and south points and then turns them into simple GIS features\ncongestion_regions = tibble()\nfor(geo in 1:nrow(congestion_2018_geo)){\n  box &lt;- st_bbox(c(xmax = congestion_2018_geo[geo, ]$east,\n              xmin = congestion_2018_geo[geo, ]$west,\n              ymax = congestion_2018_geo[geo, ]$north,\n              ymin = congestion_2018_geo[geo, ]$south),\n              crs = 4326)\n  box &lt;- st_as_sfc(box)\n  regions &lt;- tibble(congestion_2018[geo, ]$region_id, box) \n  congestion_regions &lt;- rbind(congestion_regions, regions)\n}\n\ncongestion_regions &lt;- congestion_regions %&gt;%\n  rename(region_id = `congestion_2018[geo, ]$region_id`) %&gt;%\n  arrange(region_id)\n\ncongestion_regions |&gt;\n  glimpse()\n\nRows: 29\nColumns: 2\n$ region_id &lt;dbl&gt; 1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, …\n$ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.70964 …\n\n\nBest practice with R is to avoid loops. However, in order to create a bounding box, each cardinal direction in a row has to be set up to match the inputs of a the sf function st_bbox. This code block creates the GIS data necessary for answering the questions."
+  },
+  {
+    "objectID": "case_study.html#creating-divvy-simple-features",
+    "href": "case_study.html#creating-divvy-simple-features",
+    "title": "Divvy and Chicago Congestion Data",
+    "section": "Creating Divvy Simple Features",
+    "text": "Creating Divvy Simple Features\n\ndivvy_from &lt;- read_rds(here::here(\"inputs\", \"divvy_2018_from_geo.RDS\"))\ndivvy_to &lt;- read_rds(here::here(\"inputs\", \"divvy_2018_to_geo.RDS\"))"
+  },
+  {
+    "objectID": "case_study.html#divvy-rental-patterns",
+    "href": "case_study.html#divvy-rental-patterns",
+    "title": "Divvy and Chicago Congestion Data",
+    "section": "Divvy Rental Patterns",
+    "text": "Divvy Rental Patterns\nDivvy has three kinds of users: Customer, Dependent, and Subscriber. A customer indicates a rental point of sale. Dependent is a test ride. Subscriber indicates the rider has a subscription with Divvy.\n\nHistorical Data\n\n\n\n\n\n\n\nThe bar chart shows a clear pattern of growth year over year for Divvy ridership, with a clear pattern of Subscribers riding during the traditional work week. A more thorough analysis of the historical data is beyond the scope of this project. This data visualization establishes the pattern of ridership for Divvy and provides some context for what that pattern is for Customers and Subscribers.\n\n\n\n\n\n\n  \n    \n    \n      Day\n      Customer Type\n      2013\n      2014\n      2015\n      2016\n      2017\n    \n  \n  \n    Sun\nCustomer\n79,963\n190,026\n207,956\n218,278\n201,476\n    Sun\nSubscriber\n32,493\n160,719\n216,818\n269,682\n291,076\n    Mon\nCustomer\n41,866\n89,034\n106,276\n118,778\n106,774\n    Mon\nSubscriber\n64,042\n253,095\n340,172\n433,389\n472,221\n    Tue\nCustomer\n32,807\n65,035\n85,004\n78,180\n77,836\n    Tue\nSubscriber\n69,896\n270,355\n376,493\n463,519\n501,054\n    Wed\nCustomer\n30,221\n63,419\n84,947\n59,287\n61,801\n    Wed\nSubscriber\n66,828\n273,822\n385,337\n420,457\n481,108\n    Thu\nCustomer\n33,599\n73,510\n91,534\n67,437\n67,910\n    Thu\nSubscriber\n63,272\n269,220\n365,839\n434,845\n482,156\n    Fri\nCustomer\n47,721\n106,810\n116,893\n101,940\n96,453\n    Fri\nSubscriber\n67,643\n260,799\n338,585\n427,336\n458,204\n    Sat\nCustomer\n90,575\n203,406\n237,263\n214,573\n224,611\n    Sat\nSubscriber\n38,862\n175,384\n229,976\n287,592\n306,316\n  \n  \n  \n\n\n\n\n\n\nCurrent Data: Day\n\n\n\n\n\n\n\nCurrent Data: Month\n\n\n\n\n\n\n\nCongetion\n\nlibrary(sf)\nlibrary(leaflet)\n\n\ncongestion_geos &lt;- source(here::here(\"scripts\", \"congestion_geos.R\"))\n\nhere() starts at /Users/marty/Documents/Local Dev Projects/coursera_cap_stone\n\n\n[1] 1\n[1] 2\n[1] 3\n[1] 4\n[1] 5\n[1] 6\n[1] 7\n[1] 8\n[1] 9\n[1] 10\n[1] 11\n[1] 12\n[1] 13\n[1] 14\n[1] 15\n[1] 16\n[1] 17\n[1] 18\n[1] 19\n[1] 20\n[1] 21\n[1] 22\n[1] 23\n[1] 24\n[1] 25\n[1] 26\n[1] 27\n[1] 28\n[1] 29\n\ncongestion_zone\n\n\n\n\n\n\nWhat are the average speeds in congestion regions during weekday rush hour?\nHow many divvy rides begin or end in a congestion region?"
+  },
+  {
+    "objectID": "case_study.html#section",
+    "href": "case_study.html#section",
+    "title": "Divvy and Chicago Congestion Data",
+    "section": "",
+    "text": "Divvy launched in chicago on 6/29/2013"
+  }
+]

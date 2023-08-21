@@ -7,3 +7,4 @@ Divvy_Trips.csv
 *.RDS
 inputs/
 case_study_cache/
+/.quarto/
