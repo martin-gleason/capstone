@@ -1,0 +1,9 @@
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+Divvy_Trips.csv
+*.csv
+*.RDS
+inputs/
+case_study_cache/

@@ -1,0 +1,1778 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.450">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Martin Gleason, MS">
+<meta name="dcterms.date" content="2023-08-21">
+
+<title>Divvy and Chicago Congestion Data</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="case_study_files/libs/clipboard/clipboard.min.js"></script>
+<script src="case_study_files/libs/quarto-html/quarto.js"></script>
+<script src="case_study_files/libs/quarto-html/popper.min.js"></script>
+<script src="case_study_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="case_study_files/libs/quarto-html/anchor.min.js"></script>
+<link href="case_study_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="case_study_files/libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="case_study_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="case_study_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="case_study_files/libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script src="case_study_files/libs/htmlwidgets-1.6.2/htmlwidgets.js"></script>
+<script src="case_study_files/libs/jquery-1.12.4/jquery.min.js"></script>
+<link href="case_study_files/libs/leaflet-1.3.1/leaflet.css" rel="stylesheet">
+<script src="case_study_files/libs/leaflet-1.3.1/leaflet.js"></script>
+<link href="case_study_files/libs/leafletfix-1.0.0/leafletfix.css" rel="stylesheet">
+<script src="case_study_files/libs/proj4-2.6.2/proj4.min.js"></script>
+<script src="case_study_files/libs/Proj4Leaflet-1.0.1/proj4leaflet.js"></script>
+<link href="case_study_files/libs/rstudio_leaflet-1.3.1/rstudio_leaflet.css" rel="stylesheet">
+<script src="case_study_files/libs/leaflet-binding-2.1.2/leaflet.js"></script>
+
+
+<link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of Contents</h2>
+   
+  <ul class="collapse">
+  <li><a href="#summary" id="toc-summary" class="nav-link active" data-scroll-target="#summary">Summary</a></li>
+  <li><a href="#ask" id="toc-ask" class="nav-link" data-scroll-target="#ask">Ask</a>
+  <ul class="collapse">
+  <li><a href="#stakeholders" id="toc-stakeholders" class="nav-link" data-scroll-target="#stakeholders">Stakeholders</a></li>
+  <li><a href="#questions-for-the-data" id="toc-questions-for-the-data" class="nav-link" data-scroll-target="#questions-for-the-data">Questions for the Data</a></li>
+  <li><a href="#caveats" id="toc-caveats" class="nav-link" data-scroll-target="#caveats">Caveats</a></li>
+  </ul></li>
+  <li><a href="#stake" id="toc-stake" class="nav-link" data-scroll-target="#stake">Stake</a></li>
+  <li><a href="#prepare" id="toc-prepare" class="nav-link" data-scroll-target="#prepare">Prepare</a>
+  <ul class="collapse">
+  <li><a href="#what-data-is-being-used" id="toc-what-data-is-being-used" class="nav-link" data-scroll-target="#what-data-is-being-used">What data is being used?</a></li>
+  <li><a href="#metrics" id="toc-metrics" class="nav-link" data-scroll-target="#metrics">Metrics</a></li>
+  </ul></li>
+  <li><a href="#process" id="toc-process" class="nav-link" data-scroll-target="#process">Process</a>
+  <ul class="collapse">
+  <li><a href="#creating-the-congestion-zones" id="toc-creating-the-congestion-zones" class="nav-link" data-scroll-target="#creating-the-congestion-zones">Creating the Congestion Zones</a></li>
+  <li><a href="#creating-divvy-simple-features" id="toc-creating-divvy-simple-features" class="nav-link" data-scroll-target="#creating-divvy-simple-features">Creating Divvy Simple Features</a></li>
+  </ul></li>
+  <li><a href="#analysis" id="toc-analysis" class="nav-link" data-scroll-target="#analysis">Analysis</a>
+  <ul class="collapse">
+  <li><a href="#divvy-rental-patterns" id="toc-divvy-rental-patterns" class="nav-link" data-scroll-target="#divvy-rental-patterns">Divvy Rental Patterns</a></li>
+  </ul></li>
+  <li><a href="#recommendations" id="toc-recommendations" class="nav-link" data-scroll-target="#recommendations">Recommendations</a>
+  <ul class="collapse">
+  <li><a href="#section" id="toc-section" class="nav-link" data-scroll-target="#section"></a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content page-columns page-full" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Divvy and Chicago Congestion Data</h1>
+<p class="subtitle lead"><em>A Google Coursera Capstone</em></p>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Martin Gleason, MS </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">August 21, 2023</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+</header>
+
+<section id="summary" class="level1">
+<h1>Summary</h1>
+<p>For this project, I examined the relationship between <a href="https://divvybikes.com">Divvy</a> ridership and traffic congestion in Chicago. All of the data comes from the <a href="https://data.cityofchicago.org/">Chicago Open Data Portal</a>, and all of the data cleaning steps were done in R. To provide structure to this project, I created the headings based on <a href="https://medium.com/codex/6-phases-of-data-analysis-according-to-google-9e084b89f848">Google’s Data Analysis</a> methodology, with a small change to showcase a community organizer’s idea on why leveraging data is a corner stone of our theory of change.</p>
+</section>
+<section id="ask" class="level1">
+<h1>Ask</h1>
+<p>The idea of this project is to show what, if any, relationship exists between Divvy Ridership and traffic congestion in the City of Chicago. I imagine that this project would be a small step in a much larger project of traffic analysis within the larger Chicagoland area, with the goal of reducing congestion and improving commute times for those of us who live and work in this amazing city.</p>
+<section id="stakeholders" class="level2">
+<h2 class="anchored" data-anchor-id="stakeholders">Stakeholders</h2>
+<p>At a minimum, the stakeholders of this particular project would be:</p>
+<ul>
+<li>[The City of Chicago Department of Transportation]https://www.chicago.gov/city/en/depts/cdot.html</li>
+<li>The <a href="https://idot.illinois.gov">Illinois Department of Transportation</a></li>
+<li>The <a href="https://www.cookcountyil.gov/agency/transportation-and-highways">Cook County Department of Transportation and Highways</a></li>
+<li>Community Organizations in all 52 wards, examples of which are:
+<ul>
+<li><a href="https://bikegridnow.org">Bike Grid Now</a>!</li>
+<li>Southwest Environmental Alliance</li>
+</ul></li>
+<li>Specific Alderman in City Government</li>
+</ul>
+</section>
+<section id="questions-for-the-data" class="level2">
+<h2 class="anchored" data-anchor-id="questions-for-the-data">Questions for the Data</h2>
+<p>The scope of traffic congestion is difficult to define: In addition to lane patterns, population density, transit locations, and weather patterns, congestion will be impacted by road and CTA construction, sporting events, concerts, and conventions, and other seasonal activities. In addition to the open data portal, historical weather patterns and city events should be included in a larger analysis. Given the size and scope or the larger project, deconstruction into various sections is the most efficient way to define and answer the questions.</p>
+<p>At a minimum, the stakeholders would want to know:</p>
+<ul>
+<li>What is the relationship between Divvy Ridership and congestion patterns in Chicago?</li>
+<li>What additional areas of research need to be included in the final analysis of Divvy’s impact on congestion.</li>
+</ul>
+</section>
+<section id="caveats" class="level2">
+<h2 class="anchored" data-anchor-id="caveats">Caveats</h2>
+<p>Because the data is limited to Divvy and Traffic Congestion by region, a number of confounds exist, and could be addressed in other analysis teams – specifically data about events in Chicago, weather data, and construction data are not included in the Divvy or Congestion data set.</p>
+</section>
+</section>
+<section id="stake" class="level1">
+<h1>Stake</h1>
+<p>Organizers love to talk about their connection with a particular issue, candidate, or action. We’ve defined this as a “stake.” This allows an organizer to stay connected to their community and focused on the impact of the issue. Bike use and traffic congestion are exceptionally important to the neighbors in my community, and even more so to my fellow organizers. If this was a real project, I could see a data-focused member of a community organization or task force establishing project metrics and processing the data.</p>
+</section>
+<section id="prepare" class="level1">
+<h1>Prepare</h1>
+<p>Google’s prepare phase is the process of collecting data sources and defining he metrics used to “answer the ask.” To this endd, I looked to secure quality, open source data from the Chicago’s Open Data portal. Because this data is well maintained by the city, and it does not involve propriety customer or client data, it should have been easy to use the <a href="https://cran.r-project.org/web/packages/RSocrata/index.html"><code>RSocrata</code></a> package. However, during the prepare phase, instead of exporting the Socrata query, I simply downloaded the entire data set.</p>
+<p>Future project will have involve quering the data through Socrata to limit the amount of data being downloaded and keep the file sizes to a reasonable level. There is a benefit to this extra data: It required significant cleaning and allowed me to learn how to leverage R and Rstudio with large (4+ gigabytes) of data and improve performance.</p>
+<section id="what-data-is-being-used" class="level2">
+<h2 class="anchored" data-anchor-id="what-data-is-being-used">What data is being used?</h2>
+<p>This case study limts the data to two data sets: The <a href="https://divvybikes.com">Divvy Ride Share</a> and the <a href="https://data.cityofchicago.org/Transportation/Chicago-Traffic-Tracker-Congestion-Estimates-by-Re/t2qc-9pjd">City of Chicago Traffic Congestion by Region</a> data set.</p>
+<section id="divvy" class="level3">
+<h3 class="anchored" data-anchor-id="divvy">Divvy</h3>
+<p>The data analyzed is 7,420,746 unique rides from <em>2018-03-09</em> to <em>2019-12-31</em>. This represents a cross over of the most recent data between both data sets. These fields include:</p>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "trip_id"           "start_time"        "stop_time"        
+ [4] "bike_id"           "trip_duration"     "from_station_id"  
+ [7] "from_station_name" "to_station_id"     "to_station_name"  
+[10] "user_type"         "gender"            "birth_year"       </code></pre>
+</div>
+</div>
+<p>The original data also includes GIS geography data that is separated into two other data sets: divvy_from and divvy_to. The data cleaning process that created these data sets is detailed in the [Making Simple Features] section of this document.</p>
+</section>
+<section id="congestion-zones" class="level3">
+<h3 class="anchored" data-anchor-id="congestion-zones">Congestion Zones</h3>
+<div class="cell">
+<div class="cell-output cell-output-stdout">
+<pre><code> [1] "time"        "region_id"   "speed"       "region"      "bus_count"  
+ [6] "num_reads"   "hour"        "day_of_week" "month"       "description"
+[11] "record_id"   "west"        "east"        "south"       "north"      
+[16] "nw_location" "se_location" "start_year" </code></pre>
+</div>
+</div>
+<p>The congestion zone data also contains regions where speed, time, and bus counts are measured - a total of 2,534,656 from 2018-03-09 to 2019-12-31. How this data was transformed into GIS features are documented in the <a href="#process">Process</a> section of this document.</p>
+</section>
+</section>
+<section id="metrics" class="level2">
+<h2 class="anchored" data-anchor-id="metrics">Metrics</h2>
+<p>Determining the relationship between Divvy riders and Chicago traffic patterns requires the following metrics:</p>
+<ul>
+<li>What are the Divvy rental patterns by:
+<ul>
+<li>Day</li>
+<li>Month</li>
+<li>Congestion Region</li>
+</ul></li>
+<li>What are the average speeds in congestion regions during weekday rush hour?</li>
+<li>How many divvy rides begin or end in a congestion region?</li>
+</ul>
+</section>
+</section>
+<section id="process" class="level1">
+<h1>Process</h1>
+<p>The processing step involves cleaning the data to make sure it can be utilized in the analysis. Divvy and the congestion data set required extensive processing. At a minimum, each data set had to:</p>
+<ul>
+<li>To have similar date ranges and date types.</li>
+<li>To have similar column names.</li>
+<li>To have their geographic data separated and transformed into <a href="https://r-spatial.github.io/sf/">Simple Features</a></li>
+</ul>
+<section id="creating-the-congestion-zones" class="level2">
+<h2 class="anchored" data-anchor-id="creating-the-congestion-zones">Creating the Congestion Zones</h2>
+<p>The congestion zones data set has GIS data, but it is not a GIS feature. This means that without significant transformation, no GIS analysis could be done. The following code chunk illustrates the issue:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>congestion_2018 <span class="sc">%&gt;%</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>(region_id, <span class="at">.keep_all =</span> <span class="cn">TRUE</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(region_id) <span class="sc">|&gt;</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(region, west, east, south, north) <span class="sc">|&gt;</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">head</span>(<span class="dv">19</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">gt</span>(<span class="at">caption =</span> <span class="st">"Each of the 19 Congestion Zones"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">tab_header</span>(<span class="at">title =</span> gt<span class="sc">::</span><span class="fu">md</span>(<span class="st">"**Chicago Congetion Zone**"</span>)) <span class="sc">|&gt;</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">cols_label</span>(<span class="at">region =</span> <span class="st">"Region"</span>, </span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>                 <span class="at">west =</span> <span class="st">"West"</span>, </span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>                 <span class="at">east =</span> <span class="st">"East"</span>, </span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>                 <span class="at">south =</span> <span class="st">"South"</span>, </span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>                 <span class="at">north =</span> <span class="st">"North"</span>) <span class="sc">|&gt;</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  gt<span class="sc">::</span><span class="fu">opt_stylize</span>(<span class="at">style =</span> <span class="dv">1</span>, <span class="at">color =</span> <span class="st">"gray"</span>) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+
+<div id="jjbguzpybe" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#jjbguzpybe table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#jjbguzpybe thead, #jjbguzpybe tbody, #jjbguzpybe tfoot, #jjbguzpybe tr, #jjbguzpybe td, #jjbguzpybe th {
+  border-style: none;
+}
+
+#jjbguzpybe p {
+  margin: 0;
+  padding: 0;
+}
+
+#jjbguzpybe .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #000000;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #000000;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#jjbguzpybe .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#jjbguzpybe .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#jjbguzpybe .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#jjbguzpybe .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#jjbguzpybe .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #5F5F5F;
+}
+
+#jjbguzpybe .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #5F5F5F;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #5F5F5F;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#jjbguzpybe .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#jjbguzpybe .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#jjbguzpybe .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#jjbguzpybe .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#jjbguzpybe .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #5F5F5F;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#jjbguzpybe .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#jjbguzpybe .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #5F5F5F;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #5F5F5F;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#jjbguzpybe .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #5F5F5F;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #5F5F5F;
+  vertical-align: middle;
+}
+
+#jjbguzpybe .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#jjbguzpybe .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#jjbguzpybe .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: none;
+  border-top-width: 1px;
+  border-top-color: #D5D5D5;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D5D5D5;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D5D5D5;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#jjbguzpybe .gt_stub {
+  color: #FFFFFF;
+  background-color: #5F5F5F;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #5F5F5F;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jjbguzpybe .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#jjbguzpybe .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#jjbguzpybe .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#jjbguzpybe .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jjbguzpybe .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #5F5F5F;
+}
+
+#jjbguzpybe .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#jjbguzpybe .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #5F5F5F;
+}
+
+#jjbguzpybe .gt_grand_summary_row {
+  color: #333333;
+  background-color: #D5D5D5;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jjbguzpybe .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #5F5F5F;
+}
+
+#jjbguzpybe .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #5F5F5F;
+}
+
+#jjbguzpybe .gt_striped {
+  background-color: #F4F4F4;
+}
+
+#jjbguzpybe .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #5F5F5F;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #5F5F5F;
+}
+
+#jjbguzpybe .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#jjbguzpybe .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jjbguzpybe .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#jjbguzpybe .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#jjbguzpybe .gt_left {
+  text-align: left;
+}
+
+#jjbguzpybe .gt_center {
+  text-align: center;
+}
+
+#jjbguzpybe .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#jjbguzpybe .gt_font_normal {
+  font-weight: normal;
+}
+
+#jjbguzpybe .gt_font_bold {
+  font-weight: bold;
+}
+
+#jjbguzpybe .gt_font_italic {
+  font-style: italic;
+}
+
+#jjbguzpybe .gt_super {
+  font-size: 65%;
+}
+
+#jjbguzpybe .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#jjbguzpybe .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#jjbguzpybe .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#jjbguzpybe .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#jjbguzpybe .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#jjbguzpybe .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#jjbguzpybe .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <caption>Each of the 19 Congestion Zones</caption>
+  <thead>
+    <tr class="gt_heading">
+      <td colspan="5" class="gt_heading gt_title gt_font_normal gt_bottom_border" style=""><strong>Chicago Congetion Zone</strong></td>
+    </tr>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Region">Region</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="West">West</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="East">East</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="South">South</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="North">North</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="region" class="gt_row gt_left">Rogers Park - West Ridge</td>
+<td headers="west" class="gt_row gt_right">-87.70964</td>
+<td headers="east" class="gt_row gt_right">-87.65456</td>
+<td headers="south" class="gt_row gt_right">41.99795</td>
+<td headers="north" class="gt_row gt_right">42.02644</td></tr>
+    <tr><td headers="region" class="gt_row gt_left gt_striped">Far North West</td>
+<td headers="west" class="gt_row gt_right gt_striped">-87.84621</td>
+<td headers="east" class="gt_row gt_right gt_striped">-87.74746</td>
+<td headers="south" class="gt_row gt_right gt_striped">41.96067</td>
+<td headers="north" class="gt_row gt_right gt_striped">42.01910</td></tr>
+    <tr><td headers="region" class="gt_row gt_left">North Park-Albany-Linconl Sq</td>
+<td headers="west" class="gt_row gt_right">-87.74746</td>
+<td headers="east" class="gt_row gt_right">-87.67459</td>
+<td headers="south" class="gt_row gt_right">41.96067</td>
+<td headers="north" class="gt_row gt_right">41.99795</td></tr>
+    <tr><td headers="region" class="gt_row gt_left gt_striped">Edge Water-Uptown</td>
+<td headers="west" class="gt_row gt_right gt_striped">-87.67459</td>
+<td headers="east" class="gt_row gt_right gt_striped">-87.64644</td>
+<td headers="south" class="gt_row gt_right gt_striped">41.96067</td>
+<td headers="north" class="gt_row gt_right gt_striped">41.99795</td></tr>
+    <tr><td headers="region" class="gt_row gt_left">Dunning-Portage-Belmont Cragn</td>
+<td headers="west" class="gt_row gt_right">-87.84621</td>
+<td headers="east" class="gt_row gt_right">-87.74746</td>
+<td headers="south" class="gt_row gt_right">41.90927</td>
+<td headers="north" class="gt_row gt_right">41.96067</td></tr>
+    <tr><td headers="region" class="gt_row gt_left gt_striped">Irving Park-Avondale-North Ctr</td>
+<td headers="west" class="gt_row gt_right gt_striped">-87.74746</td>
+<td headers="east" class="gt_row gt_right gt_striped">-87.67459</td>
+<td headers="south" class="gt_row gt_right gt_striped">41.93184</td>
+<td headers="north" class="gt_row gt_right gt_striped">41.96067</td></tr>
+    <tr><td headers="region" class="gt_row gt_left">Hermosa-Logan Square</td>
+<td headers="west" class="gt_row gt_right">-87.74746</td>
+<td headers="east" class="gt_row gt_right">-87.67459</td>
+<td headers="south" class="gt_row gt_right">41.90927</td>
+<td headers="north" class="gt_row gt_right">41.93184</td></tr>
+    <tr><td headers="region" class="gt_row gt_left gt_striped">Lincoln Park-Lake View</td>
+<td headers="west" class="gt_row gt_right gt_striped">-87.67459</td>
+<td headers="east" class="gt_row gt_right gt_striped">-87.61911</td>
+<td headers="south" class="gt_row gt_right gt_striped">41.91056</td>
+<td headers="north" class="gt_row gt_right gt_striped">41.96067</td></tr>
+    <tr><td headers="region" class="gt_row gt_left">Austin</td>
+<td headers="west" class="gt_row gt_right">-87.77595</td>
+<td headers="east" class="gt_row gt_right">-87.74746</td>
+<td headers="south" class="gt_row gt_right">41.86613</td>
+<td headers="north" class="gt_row gt_right">41.90927</td></tr>
+    <tr><td headers="region" class="gt_row gt_left gt_striped">Humboldt-Garfield Prk E/W</td>
+<td headers="west" class="gt_row gt_right gt_striped">-87.74746</td>
+<td headers="east" class="gt_row gt_right gt_striped">-87.69162</td>
+<td headers="south" class="gt_row gt_right gt_striped">41.86613</td>
+<td headers="north" class="gt_row gt_right gt_striped">41.90927</td></tr>
+    <tr><td headers="region" class="gt_row gt_left">West Town-Near West</td>
+<td headers="west" class="gt_row gt_right">-87.69162</td>
+<td headers="east" class="gt_row gt_right">-87.64721</td>
+<td headers="south" class="gt_row gt_right">41.86613</td>
+<td headers="north" class="gt_row gt_right">41.91056</td></tr>
+    <tr><td headers="region" class="gt_row gt_left gt_striped">Near North</td>
+<td headers="west" class="gt_row gt_right gt_striped">-87.64721</td>
+<td headers="east" class="gt_row gt_right gt_striped">-87.62308</td>
+<td headers="south" class="gt_row gt_right gt_striped">41.88886</td>
+<td headers="north" class="gt_row gt_right gt_striped">41.91140</td></tr>
+    <tr><td headers="region" class="gt_row gt_left">Chicago Loop</td>
+<td headers="west" class="gt_row gt_right">-87.64721</td>
+<td headers="east" class="gt_row gt_right">-87.62308</td>
+<td headers="south" class="gt_row gt_right">41.86613</td>
+<td headers="north" class="gt_row gt_right">41.88886</td></tr>
+    <tr><td headers="region" class="gt_row gt_left gt_striped">Lawndale N/S</td>
+<td headers="west" class="gt_row gt_right gt_striped">-87.74746</td>
+<td headers="east" class="gt_row gt_right gt_striped">-87.68537</td>
+<td headers="south" class="gt_row gt_right gt_striped">41.82279</td>
+<td headers="north" class="gt_row gt_right gt_striped">41.86613</td></tr>
+    <tr><td headers="region" class="gt_row gt_left">Bridgeport-McKinley-Lower West</td>
+<td headers="west" class="gt_row gt_right">-87.68537</td>
+<td headers="east" class="gt_row gt_right">-87.63632</td>
+<td headers="south" class="gt_row gt_right">41.82279</td>
+<td headers="north" class="gt_row gt_right">41.86613</td></tr>
+    <tr><td headers="region" class="gt_row gt_left gt_striped">Near South-Douglas</td>
+<td headers="west" class="gt_row gt_right gt_striped">-87.63632</td>
+<td headers="east" class="gt_row gt_right gt_striped">-87.59795</td>
+<td headers="south" class="gt_row gt_right gt_striped">41.82279</td>
+<td headers="north" class="gt_row gt_right gt_striped">41.86613</td></tr>
+    <tr><td headers="region" class="gt_row gt_left">Midway-Garfield Rdg-Clearing</td>
+<td headers="west" class="gt_row gt_right">-87.80219</td>
+<td headers="east" class="gt_row gt_right">-87.74746</td>
+<td headers="south" class="gt_row gt_right">41.76407</td>
+<td headers="north" class="gt_row gt_right">41.82279</td></tr>
+    <tr><td headers="region" class="gt_row gt_left gt_striped">South West Side</td>
+<td headers="west" class="gt_row gt_right gt_striped">-87.74746</td>
+<td headers="east" class="gt_row gt_right gt_striped">-87.68373</td>
+<td headers="south" class="gt_row gt_right gt_striped">41.76407</td>
+<td headers="north" class="gt_row gt_right gt_striped">41.82279</td></tr>
+    <tr><td headers="region" class="gt_row gt_left">New City-Englewood-W Englewood</td>
+<td headers="west" class="gt_row gt_right">-87.68373</td>
+<td headers="east" class="gt_row gt_right">-87.63632</td>
+<td headers="south" class="gt_row gt_right">41.76407</td>
+<td headers="north" class="gt_row gt_right">41.82279</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+</div>
+</div>
+<p>Each region is bounded by either a point of Latitude or Longitude. To create an actual GIS feature the North and West, and the South and East columns, had to be combined to create a simple GIS feature.</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(gt)</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="co"># a for loop that identifies the east, west, north and south points and then turns them into simple GIS features</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>congestion_regions <span class="ot">=</span> <span class="fu">tibble</span>()</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="cf">for</span>(geo <span class="cf">in</span> <span class="dv">1</span><span class="sc">:</span><span class="fu">nrow</span>(congestion_2018_geo)){</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  box <span class="ot">&lt;-</span> <span class="fu">st_bbox</span>(<span class="fu">c</span>(<span class="at">xmax =</span> congestion_2018_geo[geo, ]<span class="sc">$</span>east,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>              <span class="at">xmin =</span> congestion_2018_geo[geo, ]<span class="sc">$</span>west,</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>              <span class="at">ymax =</span> congestion_2018_geo[geo, ]<span class="sc">$</span>north,</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>              <span class="at">ymin =</span> congestion_2018_geo[geo, ]<span class="sc">$</span>south),</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>              <span class="at">crs =</span> <span class="dv">4326</span>)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  box <span class="ot">&lt;-</span> <span class="fu">st_as_sfc</span>(box)</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  regions <span class="ot">&lt;-</span> <span class="fu">tibble</span>(congestion_2018[geo, ]<span class="sc">$</span>region_id, box) </span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  congestion_regions <span class="ot">&lt;-</span> <span class="fu">rbind</span>(congestion_regions, regions)</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>congestion_regions <span class="ot">&lt;-</span> congestion_regions <span class="sc">%&gt;%</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rename</span>(<span class="at">region_id =</span> <span class="st">`</span><span class="at">congestion_2018[geo, ]$region_id</span><span class="st">`</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(region_id)</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>congestion_regions <span class="sc">|&gt;</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glimpse</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>Rows: 29
+Columns: 2
+$ region_id &lt;dbl&gt; 1, 2, 3, 4, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 17, 18, 19, …
+$ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.70964 …</code></pre>
+</div>
+</div>
+<p>Best practice with R is to avoid loops. However, in order to create a bounding box, each cardinal direction in a row has to be set up to match the inputs of a the sf function <code>st_bbox.</code> This code block creates the GIS data necessary for answering the questions.</p>
+</section>
+<section id="creating-divvy-simple-features" class="level2">
+<h2 class="anchored" data-anchor-id="creating-divvy-simple-features">Creating Divvy Simple Features</h2>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>divvy_from <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"inputs"</span>, <span class="st">"divvy_2018_from_geo.RDS"</span>))</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>divvy_to <span class="ot">&lt;-</span> <span class="fu">read_rds</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"inputs"</span>, <span class="st">"divvy_2018_to_geo.RDS"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+</section>
+</section>
+<section id="analysis" class="level1 page-columns page-full">
+<h1>Analysis</h1>
+<p>Analysis is where all of the work comes together, including specific metrics, data visualizations, and noting any interesting outliers.</p>
+<section id="divvy-rental-patterns" class="level2 page-columns page-full">
+<h2 class="anchored" data-anchor-id="divvy-rental-patterns">Divvy Rental Patterns</h2>
+<p>Divvy has three kinds of users: Customer, Dependent, and Subscriber. A customer indicates a rental point of sale. Dependent is a test ride. Subscriber indicates the rider has a subscription with Divvy.</p>
+<section id="historical-data" class="level3 page-columns page-full">
+<h3 class="anchored" data-anchor-id="historical-data">Historical Data</h3>
+<div class="column-screen-inset page-columns page-full">
+<div class="cell page-columns page-full" data-fig.format="retina" data-hash="case_study_cache/html/historicalDivvy_87546c232d9df65509286a96f40c41f2">
+<div class="cell-output-display column-body">
+<p><img src="case_study_files/figure-html/historicalDivvy-1.png" class="img-fluid" alt="A bar graph showing the number of riders per weekday from 2013 - 2017" width="1440"></p>
+</div>
+</div>
+</div>
+<p>The bar chart shows a clear pattern of growth year over year for Divvy ridership, with a clear pattern of Subscribers riding during the traditional work week. A more thorough analysis of the historical data is beyond the scope of this project. This data visualization establishes the pattern of ridership for Divvy and provides some context for what that pattern is for Customers and Subscribers.</p>
+<div class="cell">
+<div class="cell-output-display">
+
+<div id="iynpkiiegx" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#iynpkiiegx table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#iynpkiiegx thead, #iynpkiiegx tbody, #iynpkiiegx tfoot, #iynpkiiegx tr, #iynpkiiegx td, #iynpkiiegx th {
+  border-style: none;
+}
+
+#iynpkiiegx p {
+  margin: 0;
+  padding: 0;
+}
+
+#iynpkiiegx .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #A8A8A8;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #A8A8A8;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#iynpkiiegx .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#iynpkiiegx .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#iynpkiiegx .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#iynpkiiegx .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#iynpkiiegx .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#iynpkiiegx .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#iynpkiiegx .gt_col_heading {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#iynpkiiegx .gt_column_spanner_outer {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#iynpkiiegx .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#iynpkiiegx .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#iynpkiiegx .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#iynpkiiegx .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#iynpkiiegx .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#iynpkiiegx .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  vertical-align: middle;
+}
+
+#iynpkiiegx .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#iynpkiiegx .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#iynpkiiegx .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: solid;
+  border-top-width: 1px;
+  border-top-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#iynpkiiegx .gt_stub {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#iynpkiiegx .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#iynpkiiegx .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#iynpkiiegx .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#iynpkiiegx .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#iynpkiiegx .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #D3D3D3;
+}
+
+#iynpkiiegx .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#iynpkiiegx .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#iynpkiiegx .gt_grand_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#iynpkiiegx .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #D3D3D3;
+}
+
+#iynpkiiegx .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #D3D3D3;
+}
+
+#iynpkiiegx .gt_striped {
+  background-color: rgba(128, 128, 128, 0.05);
+}
+
+#iynpkiiegx .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+}
+
+#iynpkiiegx .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#iynpkiiegx .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#iynpkiiegx .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#iynpkiiegx .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#iynpkiiegx .gt_left {
+  text-align: left;
+}
+
+#iynpkiiegx .gt_center {
+  text-align: center;
+}
+
+#iynpkiiegx .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#iynpkiiegx .gt_font_normal {
+  font-weight: normal;
+}
+
+#iynpkiiegx .gt_font_bold {
+  font-weight: bold;
+}
+
+#iynpkiiegx .gt_font_italic {
+  font-style: italic;
+}
+
+#iynpkiiegx .gt_super {
+  font-size: 65%;
+}
+
+#iynpkiiegx .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#iynpkiiegx .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#iynpkiiegx .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#iynpkiiegx .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#iynpkiiegx .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#iynpkiiegx .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#iynpkiiegx .gt_indent_5 {
+  text-indent: 25px;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Day">Day</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id="Customer Type">Customer Type</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="2013">2013</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="2014">2014</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="2015">2015</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="2016">2016</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_right" rowspan="1" colspan="1" scope="col" id="2017">2017</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr><td headers="day" class="gt_row gt_left">Sun</td>
+<td headers="user_type" class="gt_row gt_left">Customer</td>
+<td headers="2013" class="gt_row gt_right">79,963</td>
+<td headers="2014" class="gt_row gt_right">190,026</td>
+<td headers="2015" class="gt_row gt_right">207,956</td>
+<td headers="2016" class="gt_row gt_right">218,278</td>
+<td headers="2017" class="gt_row gt_right">201,476</td></tr>
+    <tr><td headers="day" class="gt_row gt_left">Sun</td>
+<td headers="user_type" class="gt_row gt_left">Subscriber</td>
+<td headers="2013" class="gt_row gt_right">32,493</td>
+<td headers="2014" class="gt_row gt_right">160,719</td>
+<td headers="2015" class="gt_row gt_right">216,818</td>
+<td headers="2016" class="gt_row gt_right">269,682</td>
+<td headers="2017" class="gt_row gt_right">291,076</td></tr>
+    <tr><td headers="day" class="gt_row gt_left">Mon</td>
+<td headers="user_type" class="gt_row gt_left">Customer</td>
+<td headers="2013" class="gt_row gt_right">41,866</td>
+<td headers="2014" class="gt_row gt_right">89,034</td>
+<td headers="2015" class="gt_row gt_right">106,276</td>
+<td headers="2016" class="gt_row gt_right">118,778</td>
+<td headers="2017" class="gt_row gt_right">106,774</td></tr>
+    <tr><td headers="day" class="gt_row gt_left">Mon</td>
+<td headers="user_type" class="gt_row gt_left">Subscriber</td>
+<td headers="2013" class="gt_row gt_right">64,042</td>
+<td headers="2014" class="gt_row gt_right">253,095</td>
+<td headers="2015" class="gt_row gt_right">340,172</td>
+<td headers="2016" class="gt_row gt_right">433,389</td>
+<td headers="2017" class="gt_row gt_right">472,221</td></tr>
+    <tr><td headers="day" class="gt_row gt_left">Tue</td>
+<td headers="user_type" class="gt_row gt_left">Customer</td>
+<td headers="2013" class="gt_row gt_right">32,807</td>
+<td headers="2014" class="gt_row gt_right">65,035</td>
+<td headers="2015" class="gt_row gt_right">85,004</td>
+<td headers="2016" class="gt_row gt_right">78,180</td>
+<td headers="2017" class="gt_row gt_right">77,836</td></tr>
+    <tr><td headers="day" class="gt_row gt_left">Tue</td>
+<td headers="user_type" class="gt_row gt_left">Subscriber</td>
+<td headers="2013" class="gt_row gt_right">69,896</td>
+<td headers="2014" class="gt_row gt_right">270,355</td>
+<td headers="2015" class="gt_row gt_right">376,493</td>
+<td headers="2016" class="gt_row gt_right">463,519</td>
+<td headers="2017" class="gt_row gt_right">501,054</td></tr>
+    <tr><td headers="day" class="gt_row gt_left">Wed</td>
+<td headers="user_type" class="gt_row gt_left">Customer</td>
+<td headers="2013" class="gt_row gt_right">30,221</td>
+<td headers="2014" class="gt_row gt_right">63,419</td>
+<td headers="2015" class="gt_row gt_right">84,947</td>
+<td headers="2016" class="gt_row gt_right">59,287</td>
+<td headers="2017" class="gt_row gt_right">61,801</td></tr>
+    <tr><td headers="day" class="gt_row gt_left">Wed</td>
+<td headers="user_type" class="gt_row gt_left">Subscriber</td>
+<td headers="2013" class="gt_row gt_right">66,828</td>
+<td headers="2014" class="gt_row gt_right">273,822</td>
+<td headers="2015" class="gt_row gt_right">385,337</td>
+<td headers="2016" class="gt_row gt_right">420,457</td>
+<td headers="2017" class="gt_row gt_right">481,108</td></tr>
+    <tr><td headers="day" class="gt_row gt_left">Thu</td>
+<td headers="user_type" class="gt_row gt_left">Customer</td>
+<td headers="2013" class="gt_row gt_right">33,599</td>
+<td headers="2014" class="gt_row gt_right">73,510</td>
+<td headers="2015" class="gt_row gt_right">91,534</td>
+<td headers="2016" class="gt_row gt_right">67,437</td>
+<td headers="2017" class="gt_row gt_right">67,910</td></tr>
+    <tr><td headers="day" class="gt_row gt_left">Thu</td>
+<td headers="user_type" class="gt_row gt_left">Subscriber</td>
+<td headers="2013" class="gt_row gt_right">63,272</td>
+<td headers="2014" class="gt_row gt_right">269,220</td>
+<td headers="2015" class="gt_row gt_right">365,839</td>
+<td headers="2016" class="gt_row gt_right">434,845</td>
+<td headers="2017" class="gt_row gt_right">482,156</td></tr>
+    <tr><td headers="day" class="gt_row gt_left">Fri</td>
+<td headers="user_type" class="gt_row gt_left">Customer</td>
+<td headers="2013" class="gt_row gt_right">47,721</td>
+<td headers="2014" class="gt_row gt_right">106,810</td>
+<td headers="2015" class="gt_row gt_right">116,893</td>
+<td headers="2016" class="gt_row gt_right">101,940</td>
+<td headers="2017" class="gt_row gt_right">96,453</td></tr>
+    <tr><td headers="day" class="gt_row gt_left">Fri</td>
+<td headers="user_type" class="gt_row gt_left">Subscriber</td>
+<td headers="2013" class="gt_row gt_right">67,643</td>
+<td headers="2014" class="gt_row gt_right">260,799</td>
+<td headers="2015" class="gt_row gt_right">338,585</td>
+<td headers="2016" class="gt_row gt_right">427,336</td>
+<td headers="2017" class="gt_row gt_right">458,204</td></tr>
+    <tr><td headers="day" class="gt_row gt_left">Sat</td>
+<td headers="user_type" class="gt_row gt_left">Customer</td>
+<td headers="2013" class="gt_row gt_right">90,575</td>
+<td headers="2014" class="gt_row gt_right">203,406</td>
+<td headers="2015" class="gt_row gt_right">237,263</td>
+<td headers="2016" class="gt_row gt_right">214,573</td>
+<td headers="2017" class="gt_row gt_right">224,611</td></tr>
+    <tr><td headers="day" class="gt_row gt_left">Sat</td>
+<td headers="user_type" class="gt_row gt_left">Subscriber</td>
+<td headers="2013" class="gt_row gt_right">38,862</td>
+<td headers="2014" class="gt_row gt_right">175,384</td>
+<td headers="2015" class="gt_row gt_right">229,976</td>
+<td headers="2016" class="gt_row gt_right">287,592</td>
+<td headers="2017" class="gt_row gt_right">306,316</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+</div>
+</div>
+</section>
+<section id="current-data-day" class="level3">
+<h3 class="anchored" data-anchor-id="current-data-day">Current Data: Day</h3>
+<div class="cell" data-hash="case_study_cache/html/dayilyRentalPatter_195b7f48abb48911447e406735b2e9f9">
+<div class="cell-output-display">
+<p><img src="case_study_files/figure-html/dayilyRentalPatter-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="current-data-month" class="level3">
+<h3 class="anchored" data-anchor-id="current-data-month">Current Data: Month</h3>
+<div class="cell">
+<div class="cell-output-display">
+<p><img src="case_study_files/figure-html/monthlyRentalPatterns-1.png" class="img-fluid" width="672"></p>
+</div>
+</div>
+</section>
+<section id="congetion" class="level3">
+<h3 class="anchored" data-anchor-id="congetion">Congetion</h3>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(sf)</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(leaflet)</span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>congestion_geos <span class="ot">&lt;-</span> <span class="fu">source</span>(here<span class="sc">::</span><span class="fu">here</span>(<span class="st">"scripts"</span>, <span class="st">"congestion_geos.R"</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stderr">
+<pre><code>here() starts at /Users/marty/Documents/Local Dev Projects/coursera_cap_stone</code></pre>
+</div>
+<div class="cell-output cell-output-stdout">
+<pre><code>[1] 1
+[1] 2
+[1] 3
+[1] 4
+[1] 5
+[1] 6
+[1] 7
+[1] 8
+[1] 9
+[1] 10
+[1] 11
+[1] 12
+[1] 13
+[1] 14
+[1] 15
+[1] 16
+[1] 17
+[1] 18
+[1] 19
+[1] 20
+[1] 21
+[1] 22
+[1] 23
+[1] 24
+[1] 25
+[1] 26
+[1] 27
+[1] 28
+[1] 29</code></pre>
+</div>
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>congestion_zone</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output-display">
+<div class="leaflet html-widget html-fill-item-overflow-hidden html-fill-item" id="htmlwidget-ad82412c4d7b599c453d" style="width:100%;height:464px;"></div>
+<script type="application/json" data-for="htmlwidget-ad82412c4d7b599c453d">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"https://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"https://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addPolygons","args":[[[[{"lng":[-87.662508,-87.584845,-87.584845,-87.662508,-87.662508],"lat":[41.677477,41.677477,41.728472,41.728472,41.677477]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"1",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.70964499999999,-87.654561,-87.654561,-87.70964499999999,-87.70964499999999],"lat":[41.997946,41.997946,42.026444,42.026444,41.997946]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"2",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.84621,-87.747456,-87.747456,-87.84621,-87.84621],"lat":[41.960669,41.960669,42.0190998,42.0190998,41.960669]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"3",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.747456,-87.67458999999999,-87.67458999999999,-87.747456,-87.747456],"lat":[41.960669,41.960669,41.997946,41.997946,41.960669]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"4",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.67458999999999,-87.646438,-87.646438,-87.67458999999999,-87.67458999999999],"lat":[41.960669,41.960669,41.997946,41.997946,41.960669]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"6",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.84621,-87.747456,-87.747456,-87.84621,-87.84621],"lat":[41.909269,41.909269,41.960669,41.960669,41.909269]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"7",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.747456,-87.67458999999999,-87.67458999999999,-87.747456,-87.747456],"lat":[41.931841,41.931841,41.960669,41.960669,41.931841]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"8",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.747456,-87.67458999999999,-87.67458999999999,-87.747456,-87.747456],"lat":[41.909269,41.909269,41.931841,41.931841,41.909269]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"9",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.67458999999999,-87.619112,-87.619112,-87.67458999999999,-87.67458999999999],"lat":[41.910561,41.910561,41.960669,41.960669,41.910561]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"10",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.775947,-87.747456,-87.747456,-87.775947,-87.775947],"lat":[41.866129,41.866129,41.909269,41.909269,41.866129]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"11",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.747456,-87.69161699999999,-87.69161699999999,-87.747456,-87.747456],"lat":[41.866129,41.866129,41.909269,41.909269,41.866129]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"12",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.69161699999999,-87.64720800000001,-87.64720800000001,-87.69161699999999,-87.69161699999999],"lat":[41.866129,41.866129,41.910561,41.910561,41.866129]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"13",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.64720800000001,-87.62308,-87.62308,-87.64720800000001,-87.64720800000001],"lat":[41.88886,41.88886,41.911401,41.911401,41.88886]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"14",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.64720800000001,-87.62308,-87.62308,-87.64720800000001,-87.64720800000001],"lat":[41.866129,41.866129,41.88886,41.88886,41.866129]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"15",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.747456,-87.685372,-87.685372,-87.747456,-87.747456],"lat":[41.822792,41.822792,41.866129,41.866129,41.822792]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"17",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.685372,-87.63632200000001,-87.63632200000001,-87.685372,-87.685372],"lat":[41.822792,41.822792,41.866129,41.866129,41.822792]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"18",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.63632200000001,-87.59795200000001,-87.59795200000001,-87.63632200000001,-87.63632200000001],"lat":[41.822792,41.822792,41.866129,41.866129,41.822792]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"19",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.802188,-87.747456,-87.747456,-87.802188,-87.802188],"lat":[41.764066,41.764066,41.822792,41.822792,41.764066]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"21",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.747456,-87.68373,-87.68373,-87.747456,-87.747456],"lat":[41.764066,41.764066,41.822792,41.822792,41.764066]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"22",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.68373,-87.63632200000001,-87.63632200000001,-87.68373,-87.68373],"lat":[41.764066,41.764066,41.822792,41.822792,41.764066]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"23",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.63632200000001,-87.606334,-87.606334,-87.63632200000001,-87.63632200000001],"lat":[41.764066,41.764066,41.822792,41.822792,41.764066]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"24",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.606334,-87.56626,-87.56626,-87.606334,-87.606334],"lat":[41.764066,41.764066,41.822792,41.822792,41.764066]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"25",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.747456,-87.67298,-87.67298,-87.747456,-87.747456],"lat":[41.728472,41.728472,41.764066,41.764066,41.728472]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"26",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.67298,-87.606334,-87.606334,-87.67298,-87.67298],"lat":[41.728472,41.728472,41.764066,41.764066,41.728472]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"27",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.606334,-87.526388,-87.526388,-87.606334,-87.606334],"lat":[41.728472,41.728472,41.764066,41.764066,41.728472]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"28",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.747456,-87.662508,-87.662508,-87.747456,-87.747456],"lat":[41.677477,41.677477,41.728472,41.728472,41.677477]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"29",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.584845,-87.52443599999999,-87.52443599999999,-87.584845,-87.584845],"lat":[41.677477,41.677477,41.728472,41.728472,41.677477]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"29",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.662508,-87.52443599999999,-87.52443599999999,-87.662508,-87.662508],"lat":[41.644139,41.644139,41.677477,41.677477,41.644139]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"29",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolygons","args":[[[[{"lng":[-87.62308,-87.595378,-87.595378,-87.62308,-87.62308],"lat":[41.866129,41.866129,41.911401,41.911401,41.866129]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#1C110A","weight":0.75,"opacity":0.5,"fill":true,"fillColor":"#1C110A","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,"29",{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addLayersControl","args":[[],[],{"collapsed":true,"autoZIndex":true,"position":"topright"}]}],"limits":{"lat":[41.644139,42.026444],"lng":[-87.84621,-87.52443599999999]}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<ul>
+<li><p>What are the average speeds in congestion regions during weekday rush hour?</p></li>
+<li><p>How many divvy rides begin or end in a congestion region?</p></li>
+</ul>
+</section>
+</section>
+</section>
+<section id="recommendations" class="level1">
+<h1>Recommendations</h1>
+<p><em>Bold</em> <strong>italic</strong></p>
+<ul>
+<li>One
+<ul>
+<li>Two
+<ul>
+<li>Three</li>
+</ul></li>
+</ul></li>
+</ul>
+<section id="section" class="level2">
+<h2 class="anchored" data-anchor-id="section"></h2>
+<p><a href="https://en.wikipedia.org/wiki/Divvy">Divvy launched in chicago on 6/29/2013</a></p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

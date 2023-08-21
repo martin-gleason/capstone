@@ -1,0 +1,352 @@
+---
+title: "Divvy and Chicago Congestion Data"
+subtitle: "*A Google Coursera Capstone*"
+author: "Martin Gleason, MS"
+date: today
+format: 
+  html:
+    theme: 
+      - zephyr
+      - blog_styles.scss
+    toc: true
+    toc-depth: 2
+    toc-location: right
+    toc-title: "Table of Contents"
+    css: styles.css
+    page-layout: article
+editor: visual
+---
+
+```{r}
+#| label: loading
+#| echo: false
+#| message: false
+#| include: false
+#| cache: true
+
+library(tidyverse)
+
+#source(here::here("scripts", "clean_divvy_congestion_2019.R"))
+divvy_2018 <- readRDS(here::here("inputs", "divvy_2018_data.RDS"))
+congestion_2018 <- read_rds(here::here("inputs", "congestion_2018.RDS"))
+congestion_geos <- source(here::here("scripts", "congestion_geos.R"))
+
+total_rides <- divvy_2018 |> 
+  distinct(trip_id) |>
+  nrow()
+
+total_observations <- nrow(congestion_2018) %>%
+  format(big.mark=",")
+
+divvy_2018 <- divvy_2018 %>% 
+    filter(start_time >= min(congestion_2018$time))
+```
+
+# Summary
+
+For this project, I examined the relationship between [Divvy](https://divvybikes.com) ridership and traffic congestion in Chicago. All of the data comes from the [Chicago Open Data Portal](https://data.cityofchicago.org/), and all of the data cleaning steps were done in R. To provide structure to this project, I created the headings based on [Google's Data Analysis](https://medium.com/codex/6-phases-of-data-analysis-according-to-google-9e084b89f848) methodology, with a small change to showcase a community organizer's idea on why leveraging data is a corner stone of our theory of change.
+
+# Ask
+
+The idea of this project is to show what, if any, relationship exists between Divvy Ridership and traffic congestion in the City of Chicago. I imagine that this project would be a small step in a much larger project of traffic analysis within the larger Chicagoland area, with the goal of reducing congestion and improving commute times for those of us who live and work in this amazing city.
+
+## Stakeholders
+
+At a minimum, the stakeholders of this particular project would be:
+
+-   \[The City of Chicago Department of Transportation\]https://www.chicago.gov/city/en/depts/cdot.html
+-   The [Illinois Department of Transportation](https://idot.illinois.gov)
+-   The [Cook County Department of Transportation and Highways](https://www.cookcountyil.gov/agency/transportation-and-highways)
+-   Community Organizations in all 52 wards, examples of which are:
+    -   [Bike Grid Now](https://bikegridnow.org)!
+    -   Southwest Environmental Alliance
+-   Specific Alderman in City Government
+
+## Questions for the Data
+
+The scope of traffic congestion is difficult to define: In addition to lane patterns, population density, transit locations, and weather patterns, congestion will be impacted by road and CTA construction, sporting events, concerts, and conventions, and other seasonal activities. In addition to the open data portal, historical weather patterns and city events should be included in a larger analysis. Given the size and scope or the larger project, deconstruction into various sections is the most efficient way to define and answer the questions.
+
+At a minimum, the stakeholders would want to know:
+
+-   What is the relationship between Divvy Ridership and congestion patterns in Chicago?
+-   What additional areas of research need to be included in the final analysis of Divvy's impact on congestion.
+
+## Caveats
+
+Because the data is limited to Divvy and Traffic Congestion by region, a number of confounds exist, and could be addressed in other analysis teams -- specifically data about events in Chicago, weather data, and construction data are not included in the Divvy or Congestion data set.
+
+# Stake
+
+Organizers love to talk about their connection with a particular issue, candidate, or action. We've defined this as a "stake." This allows an organizer to stay connected to their community and focused on the impact of the issue. Bike use and traffic congestion are exceptionally important to the neighbors in my community, and even more so to my fellow organizers. If this was a real project, I could see a data-focused member of a community organization or task force establishing project metrics and processing the data.
+
+# Prepare
+
+Google's prepare phase is the process of collecting data sources and defining he metrics used to "answer the ask." To this endd, I looked to secure quality, open source data from the Chicago's Open Data portal. Because this data is well maintained by the city, and it does not involve propriety customer or client data, it should have been easy to use the [`RSocrata`](https://cran.r-project.org/web/packages/RSocrata/index.html) package. However, during the prepare phase, instead of exporting the Socrata query, I simply downloaded the entire data set.
+
+Future project will have involve quering the data through Socrata to limit the amount of data being downloaded and keep the file sizes to a reasonable level. There is a benefit to this extra data: It required significant cleaning and allowed me to learn how to leverage R and Rstudio with large (4+ gigabytes) of data and improve performance.
+
+## What data is being used?
+
+This case study limts the data to two data sets: The [Divvy Ride Share](https://divvybikes.com) and the [City of Chicago Traffic Congestion by Region](https://data.cityofchicago.org/Transportation/Chicago-Traffic-Tracker-Congestion-Estimates-by-Re/t2qc-9pjd) data set.
+
+### Divvy
+
+The data analyzed is `r format(total_rides, big.mark=",")` unique rides from *`r lubridate::as_date(min(divvy_2018$start_time))`* to *`r lubridate::as_date(max(divvy_2018$start_time))`*. This represents a cross over of the most recent data between both data sets. These fields include:
+
+```{r}
+#| label: divvy_fields
+#| echo: false
+colnames(divvy_2018)
+```
+
+The original data also includes GIS geography data that is separated into two other data sets: divvy_from and divvy_to. The data cleaning process that created these data sets is detailed in the \[Making Simple Features\] section of this document.
+
+### Congestion Zones
+
+```{r}
+#| label: congestion_fields
+#| echo: false
+colnames(congestion_2018)
+```
+
+The congestion zone data also contains regions where speed, time, and bus counts are measured - a total of `r total_observations` from `r congestion_2018$time |> min() |> lubridate::as_date()` to `r congestion_2018$time |> max() |> lubridate::as_date()`. How this data was transformed into GIS features are documented in the [Process] section of this document.
+
+## Metrics
+
+Determining the relationship between Divvy riders and Chicago traffic patterns requires the following metrics:
+
+-   What are the Divvy rental patterns by:
+    -   Day
+    -   Month
+    -   Congestion Region
+-   What are the average speeds in congestion regions during weekday rush hour?
+-   How many divvy rides begin or end in a congestion region?
+
+# Process
+
+The processing step involves cleaning the data to make sure it can be utilized in the analysis. Divvy and the congestion data set required extensive processing. At a minimum, each data set had to:
+
+-   To have similar date ranges and date types.
+-   To have similar column names.
+-   To have their geographic data separated and transformed into [Simple Features](https://r-spatial.github.io/sf/)
+
+## Creating the Congestion Zones
+
+The congestion zones data set has GIS data, but it is not a GIS feature. This means that without significant transformation, no GIS analysis could be done. The following code chunk illustrates the issue:
+
+```{r}
+#| label: gis
+#| message: false
+library(tidyverse)
+congestion_2018 %>%
+  distinct(region_id, .keep_all = TRUE) |>
+  arrange(region_id) |>
+  select(region, west, east, south, north) |>
+  head(19) |>
+  gt::gt(caption = "Each of the 19 Congestion Zones") |>
+  gt::tab_header(title = gt::md("**Chicago Congetion Zone**")) |>
+  gt::cols_label(region = "Region", 
+                 west = "West", 
+                 east = "East", 
+                 south = "South", 
+                 north = "North") |>
+  gt::opt_stylize(style = 1, color = "gray") 
+
+
+```
+
+Each region is bounded by either a point of Latitude or Longitude. To create an actual GIS feature the North and West, and the South and East columns, had to be combined to create a simple GIS feature.
+
+```{r}
+#| label: gisFix
+#| message: false
+library(sf)
+library(tidyverse)
+library(gt)
+
+# a for loop that identifies the east, west, north and south points and then turns them into simple GIS features
+congestion_regions = tibble()
+for(geo in 1:nrow(congestion_2018_geo)){
+  box <- st_bbox(c(xmax = congestion_2018_geo[geo, ]$east,
+              xmin = congestion_2018_geo[geo, ]$west,
+              ymax = congestion_2018_geo[geo, ]$north,
+              ymin = congestion_2018_geo[geo, ]$south),
+              crs = 4326)
+  box <- st_as_sfc(box)
+  regions <- tibble(congestion_2018[geo, ]$region_id, box) 
+  congestion_regions <- rbind(congestion_regions, regions)
+}
+
+congestion_regions <- congestion_regions %>%
+  rename(region_id = `congestion_2018[geo, ]$region_id`) %>%
+  arrange(region_id)
+
+congestion_regions |>
+  glimpse()
+```
+
+Best practice with R is to avoid loops. However, in order to create a bounding box, each cardinal direction in a row has to be set up to match the inputs of a the sf function `st_bbox.` This code block creates the GIS data necessary for answering the questions.
+
+## Creating Divvy Simple Features
+
+```{r}
+#| label: divvySF
+#| echo: true
+#| warning: false
+
+divvy_from <- read_rds(here::here("inputs", "divvy_2018_from_geo.RDS"))
+divvy_to <- read_rds(here::here("inputs", "divvy_2018_to_geo.RDS"))
+
+```
+
+# Analysis
+
+Analysis is where all of the work comes together, including specific metrics, data visualizations, and noting any interesting outliers.
+
+## Divvy Rental Patterns
+
+Divvy has three kinds of users: Customer, Dependent, and Subscriber. A customer indicates a rental point of sale. Dependent is a test ride. Subscriber indicates the rider has a subscription with Divvy.
+
+### Historical Data
+
+::: column-screen-inset
+```{r}
+#| label: historicalDivvy
+#| echo: false
+#| cache: true
+#| message: false
+#| column: body
+#| fig-width: 15
+#| fig-height: 15
+#| fig-format: retina
+#| fig-alt: "A bar graph showing the number of riders per weekday from 2013 - 2017"
+
+library(tidyverse)
+library(here)
+options(scipen = 999)
+
+historical_divvy <- read_csv(here("outputs","historical_divvy_data.csv"))
+
+
+historical_divvy %>%
+  ggplot(aes(x = fct_inorder(day), y = Count, fill = user_type)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  facet_wrap(~start_year) +
+  labs(x = "Weekday", 
+       y = "Number of Rides",
+       fill = "Type of Divvy Rider",
+       title = "Divvy Bike Rentals in Chicago: 2013 - 2017") +
+  theme_minimal() +
+  theme(text = element_text(size = 20))
+
+```
+:::
+
+The bar chart shows a clear pattern of growth year over year for Divvy ridership, with a clear pattern of Subscribers riding during the traditional work week. A more thorough analysis of the historical data is beyond the scope of this project. This data visualization establishes the pattern of ridership for Divvy and provides some context for what that pattern is for Customers and Subscribers.
+
+```{r}
+#| label: historicalTable
+#| echo: false
+#| message: false
+
+library(gt)
+library(tidyverse)
+
+ historical_divvy %>%
+    filter(user_type != "Dependent") %>%
+    pivot_wider(names_from = start_year, values_from = Count) %>%
+  gt() %>%
+   fmt_number(use_seps = TRUE, decimals = 0) %>%
+   cols_label(day = "Day",
+                   user_type = "Customer Type")
+```
+
+### Current Data: Day
+
+```{r}
+#| label: dayilyRentalPatter
+#| message: false
+#| echo: false
+#| cache: true
+
+library(tidyverse)
+options(scipen = 999)
+
+divvy_2018 <- readRDS(here::here("inputs", "divvy_2018_data.RDS"))
+
+divvy_2018 %>%
+  arrange(start_time) %>%
+  mutate(day = wday(start_time, label = TRUE),
+         year = year(start_time)) %>%
+  filter(user_type != "Dependent") %>%
+  ggplot(aes(x = fct_rev(day), fill = user_type)) +
+  geom_bar(stat = "count") +
+  facet_wrap(~year) + 
+  labs(title = "Rides per Weekday 2018 - 2019",
+       day = "Month",
+       fill = "Customer Type") +
+  theme_minimal() + 
+  coord_flip()
+
+
+```
+
+### Current Data: Month
+
+```{r}
+#| label: monthlyRentalPatterns
+#| message: false
+#| echo: false
+
+library(tidyverse)
+options(scipen = 999)
+
+
+divvy_2018 %>%
+  arrange(start_time) %>%
+  mutate(month = month(start_time, label = TRUE),
+         year = year(start_time),
+         month_year = paste(month, 
+                            year,
+                            sep = "-")) %>%
+  filter(user_type != "Dependent") %>%
+  ggplot(aes(x = fct_rev(month), fill = user_type)) +
+  geom_bar(stat = "count") +
+  facet_wrap(~year) + 
+  labs(title = "Rides per month 2018 - 2019",
+       x = "Month",
+       fill = "Customer Type") +
+  theme_minimal() + 
+  coord_flip()
+```
+
+### Congetion
+
+```{r}
+#| label: congestionZone
+
+library(sf)
+library(leaflet)
+
+
+congestion_geos <- source(here::here("scripts", "congestion_geos.R"))
+
+congestion_zone
+
+```
+
+-   What are the average speeds in congestion regions during weekday rush hour?
+
+-   How many divvy rides begin or end in a congestion region?
+
+# Recommendations
+
+*Bold* **italic**
+
+-   One
+    -   Two
+        -   Three
+
+## 
+
+[Divvy launched in chicago on 6/29/2013](https://en.wikipedia.org/wiki/Divvy)

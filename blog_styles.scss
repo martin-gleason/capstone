@@ -1,0 +1,37 @@
+/*-- scss:defaults --*/
+
+//fonts to import
+//poppins
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+@import url('https://fonts.googleapis.com/css2?family=Bitter&family=Manrope:wght@200;300;400;500;600;700;800&display=swap');
+
+//Serif! 
+@import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,500;0,600;1,400;1,500&display=swap');
+//If Code needs to be used
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code');
+
+
+//sans serif: Belleza, Syne
+$font-family-sans-serif: "Manrope", "Belleza", system-ui, -apple-system;
+$font-family-base: "Manrope", $font-family-sans-serif;
+$font-family-code:  "Fira Code";
+//serif: Lora
+$presentation-heading-font: "Manrope" !default;
+
+
+//colors
+$black: #061826 !default;
+$basic: #1C110A !default;
+$beige: #E4D6A7 !default;
+$red: #9B2915 !default;
+$blue: #50A2A7 !default;
+$yellow: #E9B44C !default;
+$deep-blue: #0006b1!default;
+$green: #228B22!default;
+$teal: #008080!default;
+
+$body-color: $basic;
+$headings-color: $teal;
+
+
