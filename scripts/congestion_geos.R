@@ -44,7 +44,7 @@ for(regions in 1:nrow(congestion_regions)){
                 label = congestion_regions[regions, ]$region,
                 color = "black",
                 fillColor = "#E6A595",
-                fillOpacity = 0.15,
+                fillOpacity = 0.25,
                 weight = .75,
                 opacity = .75)
 }
