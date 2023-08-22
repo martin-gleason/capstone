@@ -287,8 +287,6 @@ divvy_2018 %>%
        fill = "Customer Type") +
   theme_minimal() + 
   coord_flip()
-
-
 ```
 
 ### Current Data: Month
@@ -320,10 +318,50 @@ divvy_2018 %>%
   coord_flip()
 ```
 
+This same data set can be used transformed into a table showing percentage of change over time. This is beyond the scope of this analysis; however, it has been my experience that this kind of metric is often asked for in addition to the ask.
+
+```{r}
+#| echo: true
+#| label: chartGrowth
+#| cache: true
+
+library(tidyverse)
+library(gt)
+options(scipen = 999) #elimiate scientific notation in R
+
+divvy_growth_projections <- divvy_2018 %>% 
+  select(1:3, "user_type") %>%
+  mutate(month = month(start_time, label = TRUE),
+         year = year(start_time),
+         month_year = paste(month, 
+                            year,
+                            sep = "-")) %>%
+  filter(user_type != "Dependent") %>%
+  select(-2, -3) %>%
+  group_by(month, year, user_type) %>%
+  summarize(count = n()) %>%
+  select(year, month, user_type, count)
+
+
+divvy_growth_projections <- divvy_growth_projections %>%
+  pivot_wider(names_from = c(year), values_from = c(count))
+
+divvy_growth_projections_subscriber <- divvy_growth_projections %>%
+  filter(user_type == "Subscriber") %>%
+  mutate(percent_growth = ((`2019` - `2018`) / `2018`) * 100)
+
+divvy_growth_projections_customer <- divvy_growth_projections %>%
+  filter(user_type == "Customer") %>%
+  mutate(percent_growth = ((`2019` - `2018`) / `2018`) * 100) 
+  
+
+```
+
 ### Congetion
 
 ```{r}
 #| label: congestionZone
+#| echo: false
 
 library(sf)
 library(leaflet)

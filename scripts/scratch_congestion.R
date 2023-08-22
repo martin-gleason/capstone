@@ -84,3 +84,31 @@ test %>%
     pivot_wider(names_from = start_year, values_from = Count) %>%
     View()
     
+  
+  
+###
+  
+divvy_growth_projections <- divvy_2018 %>% 
+  select(1:3, "user_type") %>%
+  mutate(month = month(start_time, label = TRUE),
+         year = year(start_time),
+         month_year = paste(month, 
+                            year,
+                            sep = "-")) %>%
+  filter(user_type != "Dependent") %>%
+  select(-2, -3) %>%
+  group_by(month, year, user_type) %>%
+  summarize(count = n()) %>%
+  select(year, month, user_type, count)
+
+
+divvy_growth_projections <- divvy_growth_projections %>%
+  pivot_wider(names_from = c(year), values_from = c(count))
+
+divvy_growth_projections_subscriber <- divvy_growth_projections %>%
+  filter(user_type == "Subscriber") %>%
+  mutate(percent_growth = ((`2019` - `2018`) / `2018`) * 100)
+
+divvy_growth_projections_customer <- divvy_growth_projections %>%
+  filter(user_type == "Customer") %>%
+  mutate(percent_growth = ((`2019` - `2018`) / `2018`) * 100) 
