@@ -321,9 +321,10 @@ divvy_2018 %>%
 This same data set can be used transformed into a table showing percentage of change over time. This is beyond the scope of this analysis; however, it has been my experience that this kind of metric is often asked for in addition to the ask.
 
 ```{r}
-#| echo: true
+#| echo: false
 #| label: chartGrowth
 #| cache: true
+#| message: false
 
 library(tidyverse)
 library(gt)
@@ -335,25 +336,85 @@ divvy_growth_projections <- divvy_2018 %>%
          year = year(start_time),
          month_year = paste(month, 
                             year,
-                            sep = "-")) %>%
+                            sep = "-")
+         ) %>%
   filter(user_type != "Dependent") %>%
   select(-2, -3) %>%
   group_by(month, year, user_type) %>%
   summarize(count = n()) %>%
-  select(year, month, user_type, count)
+  select(year, month, user_type, count
+         ) %>%
+  ungroup()
 
 
-divvy_growth_projections <- divvy_growth_projections %>%
+divvy_growth_projections_wide <- divvy_growth_projections %>%
   pivot_wider(names_from = c(year), values_from = c(count))
 
-divvy_growth_projections %>%
+divvy_growth_subscribers <- divvy_growth_projections_wide %>%
   filter(user_type == "Subscriber") %>%
   mutate(percent_growth = ((`2019` - `2018`) / `2018`) * 100) 
 
-divvy_growth_projections_customer <- divvy_growth_projections %>%
+divvy_growth_customers <- divvy_growth_projections_wide %>%
   filter(user_type == "Customer") %>%
   mutate(percent_growth = ((`2019` - `2018`) / `2018`) * 100) 
   
+
+```
+
+#### Use Percenatage Over Time: Subscribers
+
+```{r}
+#| label: subscriberChart
+#| echo: false
+#| warning: false
+#| message: false
+
+library(gt)
+
+divvy_growth_subscribers |>
+  select(-user_type) |>
+  gt() |>
+  cols_label(month = "Month",
+             percent_growth = "Percent Growth")|> 
+  opt_stylize(style = 1)
+  
+```
+
+#### Use Percenatage Over Time: Customers
+
+```{r}
+
+#| label: divvyGrowthCustomers
+#| echo: false
+#| message: false
+
+divvy_growth_customers|>
+  select(-user_type) |>
+  gt() |>
+  cols_label(month = "Month",
+             percent_growth = "Percent Growth")|> 
+  opt_stylize(style = 1)
+  
+
+```
+
+#### Divvy Growth Chart
+
+```{r}
+#| label: divvyGrowthPlot
+#| echo: false
+#| message: false
+
+
+divvy_growth_projections %>%
+  ggplot(aes(x = month, y = count, color = user_type, group = year)) +
+  geom_line() +
+  labs(title = "Divvy Usership 2018 - 2019",
+              x = "Month",
+              y = "Number of Rides") +
+  theme_minimal()
+
+
 
 ```
 
