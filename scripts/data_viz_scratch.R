@@ -1,4 +1,8 @@
-divvy_2018 %>%
+
+
+# divvy 2018 --------------------------------------------------------------
+
+divvy_2018_plot <-  divvy_2018 %>%
   arrange(start_time) %>%
   mutate(month = month(start_time, label = TRUE),
          year = year(start_time),
@@ -14,3 +18,9 @@ divvy_2018 %>%
        fill = "Customer Type") +
   theme_minimal() + 
   coord_flip()
+
+
+
+# new label ---------------------------------------------------------------
+
+

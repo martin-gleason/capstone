@@ -54,7 +54,7 @@ The idea of this project is to show what, if any, relationship exists between Di
 
 At a minimum, the stakeholders of this particular project would be:
 
--   \[The City of Chicago Department of Transportation\]https://www.chicago.gov/city/en/depts/cdot.html
+-   [The City of Chicago Department of Transportation](https://www.chicago.gov/city/en/depts/cdot.html)
 -   The [Illinois Department of Transportation](https://idot.illinois.gov)
 -   The [Cook County Department of Transportation and Highways](https://www.cookcountyil.gov/agency/transportation-and-highways)
 -   Community Organizations in all 52 wards, examples of which are:
@@ -91,7 +91,7 @@ This case study milts the data to two data sets: The [Divvy Ride Share](https://
 
 ### Divvy
 
-The data analyzed is `r format(total_rides, big.mark=",")` unique rides from *`r lubridate::as_date(min(divvy_2018$start_time))`* to *`r lubridate::as_date(max(divvy_2018$start_time))`*. This represents a cross over of the most recent data between both data sets. These fields include:
+The data analyzed is `r format(total_rides, big.mark=",")` unique rides from `r lubridate::as_date(min(divvy_2018$start_time))` to `r lubridate::as_date(max(divvy_2018$start_time))`. This represents a cross over of the most recent data between both data sets. These fields include:
 
 ```{r}
 #| label: divvy_fields
@@ -258,10 +258,11 @@ library(tidyverse)
   gt() %>%
    fmt_number(use_seps = TRUE, decimals = 0) %>%
    cols_label(day = "Day",
-                   user_type = "Customer Type")
+                   user_type = "Customer Type") |>
+   opt_stylize(style = 1)
 ```
 
-### Current Data: Day
+### Rental Patterns By Day
 
 ```{r}
 #| label: dayilyRentalPatter
@@ -289,7 +290,7 @@ divvy_2018 %>%
   coord_flip()
 ```
 
-### Current Data: Month
+### Rental Patterns by Month
 
 ```{r}
 #| label: monthlyRentalPatterns
@@ -380,12 +381,12 @@ divvy_growth_subscribers |>
   
 ```
 
-#### Use Percenatage Over Time: Customers
+#### Use Percentage Over Time: Customers
 
 ```{r}
-
 #| label: divvyGrowthCustomers
 #| echo: false
+#| warning: false
 #| message: false
 
 divvy_growth_customers|>
@@ -394,8 +395,6 @@ divvy_growth_customers|>
   cols_label(month = "Month",
              percent_growth = "Percent Growth")|> 
   opt_stylize(style = 1)
-  
-
 ```
 
 #### Divvy Growth Chart
@@ -407,14 +406,15 @@ divvy_growth_customers|>
 
 
 divvy_growth_projections %>%
-  ggplot(aes(x = month, y = count, color = user_type, group = year)) +
+  ggplot(aes(x = month, y = count, color = user_type, group = user_type)) +
   geom_line() +
   labs(title = "Divvy Usership 2018 - 2019",
-              x = "Month",
-              y = "Number of Rides") +
-  theme_minimal()
-
-
+       x = "Month",
+       y = "Number of Rides",
+       color = "Customer Type") +
+  facet_wrap(~year) +
+  theme_minimal() + 
+  theme(axis.text.x = element_text(angle = 45))
 
 ```
 

@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 <meta name="author" content="Martin Gleason, MS">
-<meta name="dcterms.date" content="2023-08-26">
+<meta name="dcterms.date" content="2023-09-04">
 
 <title>Divvy and Chicago Congestion Data</title>
 <style>
@@ -172,7 +172,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
     <div>
     <div class="quarto-title-meta-heading">Published</div>
     <div class="quarto-title-meta-contents">
-      <p class="date">August 26, 2023</p>
+      <p class="date">September 4, 2023</p>
     </div>
   </div>
   
@@ -193,7 +193,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <h2 class="anchored" data-anchor-id="stakeholders">Stakeholders</h2>
 <p>At a minimum, the stakeholders of this particular project would be:</p>
 <ul>
-<li>[The City of Chicago Department of Transportation]https://www.chicago.gov/city/en/depts/cdot.html</li>
+<li><a href="https://www.chicago.gov/city/en/depts/cdot.html">The City of Chicago Department of Transportation</a></li>
 <li>The <a href="https://idot.illinois.gov">Illinois Department of Transportation</a></li>
 <li>The <a href="https://www.cookcountyil.gov/agency/transportation-and-highways">Cook County Department of Transportation and Highways</a></li>
 <li>Community Organizations in all 52 wards, examples of which are:
@@ -231,7 +231,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <p>This case study milts the data to two data sets: The <a href="https://divvybikes.com">Divvy Ride Share</a> and the <a href="https://data.cityofchicago.org/Transportation/Chicago-Traffic-Tracker-Congestion-Estimates-by-Re/t2qc-9pjd">City of Chicago Traffic Congestion by Region</a> data set.</p>
 <section id="divvy" class="level3">
 <h3 class="anchored" data-anchor-id="divvy">Divvy</h3>
-<p>The data analyzed is 7,420,746 unique rides from <em>2018-03-09</em> to <em>2019-12-31</em>. This represents a cross over of the most recent data between both data sets. These fields include:</p>
+<p>The data analyzed is 7,420,746 unique rides from 2018-03-09 to 2019-12-31. This represents a cross over of the most recent data between both data sets. These fields include:</p>
 <div class="cell">
 <div class="cell-output cell-output-stdout">
 <pre><code> [1] "trip_id"           "start_time"        "stop_time"        
@@ -947,13 +947,13 @@ $ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.7
   width: auto;
   border-top-style: solid;
   border-top-width: 2px;
-  border-top-color: #A8A8A8;
+  border-top-color: #004D80;
   border-right-style: none;
   border-right-width: 2px;
   border-right-color: #D3D3D3;
   border-bottom-style: solid;
   border-bottom-width: 2px;
-  border-bottom-color: #A8A8A8;
+  border-bottom-color: #004D80;
   border-left-style: none;
   border-left-width: 2px;
   border-left-color: #D3D3D3;
@@ -1003,16 +1003,16 @@ $ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.7
 #iynpkiiegx .gt_bottom_border {
   border-bottom-style: solid;
   border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
+  border-bottom-color: #0076BA;
 }
 
 #iynpkiiegx .gt_col_headings {
   border-top-style: solid;
   border-top-width: 2px;
-  border-top-color: #D3D3D3;
+  border-top-color: #0076BA;
   border-bottom-style: solid;
   border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
+  border-bottom-color: #0076BA;
   border-left-style: none;
   border-left-width: 1px;
   border-left-color: #D3D3D3;
@@ -1064,7 +1064,7 @@ $ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.7
 #iynpkiiegx .gt_column_spanner {
   border-bottom-style: solid;
   border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
+  border-bottom-color: #0076BA;
   vertical-align: bottom;
   padding-top: 5px;
   padding-bottom: 5px;
@@ -1089,10 +1089,10 @@ $ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.7
   text-transform: inherit;
   border-top-style: solid;
   border-top-width: 2px;
-  border-top-color: #D3D3D3;
+  border-top-color: #0076BA;
   border-bottom-style: solid;
   border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
+  border-bottom-color: #0076BA;
   border-left-style: none;
   border-left-width: 1px;
   border-left-color: #D3D3D3;
@@ -1111,10 +1111,10 @@ $ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.7
   font-weight: initial;
   border-top-style: solid;
   border-top-width: 2px;
-  border-top-color: #D3D3D3;
+  border-top-color: #0076BA;
   border-bottom-style: solid;
   border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
+  border-bottom-color: #0076BA;
   vertical-align: middle;
 }
 
@@ -1132,28 +1132,28 @@ $ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.7
   padding-left: 5px;
   padding-right: 5px;
   margin: 10px;
-  border-top-style: solid;
+  border-top-style: none;
   border-top-width: 1px;
-  border-top-color: #D3D3D3;
+  border-top-color: #89D3FE;
   border-left-style: none;
   border-left-width: 1px;
-  border-left-color: #D3D3D3;
+  border-left-color: #89D3FE;
   border-right-style: none;
   border-right-width: 1px;
-  border-right-color: #D3D3D3;
+  border-right-color: #89D3FE;
   vertical-align: middle;
   overflow-x: hidden;
 }
 
 #iynpkiiegx .gt_stub {
-  color: #333333;
-  background-color: #FFFFFF;
+  color: #FFFFFF;
+  background-color: #0076BA;
   font-size: 100%;
   font-weight: initial;
   text-transform: inherit;
   border-right-style: solid;
   border-right-width: 2px;
-  border-right-color: #D3D3D3;
+  border-right-color: #0076BA;
   padding-left: 5px;
   padding-right: 5px;
 }
@@ -1192,7 +1192,7 @@ $ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.7
 
 #iynpkiiegx .gt_first_summary_row {
   border-top-style: solid;
-  border-top-color: #D3D3D3;
+  border-top-color: #0076BA;
 }
 
 #iynpkiiegx .gt_first_summary_row.thick {
@@ -1206,12 +1206,12 @@ $ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.7
   padding-right: 5px;
   border-bottom-style: solid;
   border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
+  border-bottom-color: #0076BA;
 }
 
 #iynpkiiegx .gt_grand_summary_row {
   color: #333333;
-  background-color: #FFFFFF;
+  background-color: #89D3FE;
   text-transform: inherit;
   padding-top: 8px;
   padding-bottom: 8px;
@@ -1226,7 +1226,7 @@ $ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.7
   padding-right: 5px;
   border-top-style: double;
   border-top-width: 6px;
-  border-top-color: #D3D3D3;
+  border-top-color: #0076BA;
 }
 
 #iynpkiiegx .gt_last_grand_summary_row_top {
@@ -1236,20 +1236,20 @@ $ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.7
   padding-right: 5px;
   border-bottom-style: double;
   border-bottom-width: 6px;
-  border-bottom-color: #D3D3D3;
+  border-bottom-color: #0076BA;
 }
 
 #iynpkiiegx .gt_striped {
-  background-color: rgba(128, 128, 128, 0.05);
+  background-color: #F4F4F4;
 }
 
 #iynpkiiegx .gt_table_body {
   border-top-style: solid;
   border-top-width: 2px;
-  border-top-color: #D3D3D3;
+  border-top-color: #0076BA;
   border-bottom-style: solid;
   border-bottom-width: 2px;
-  border-bottom-color: #D3D3D3;
+  border-bottom-color: #0076BA;
 }
 
 #iynpkiiegx .gt_footnotes {
@@ -1378,13 +1378,13 @@ $ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.7
 <td headers="2015" class="gt_row gt_right">207,956</td>
 <td headers="2016" class="gt_row gt_right">218,278</td>
 <td headers="2017" class="gt_row gt_right">201,476</td></tr>
-    <tr><td headers="day" class="gt_row gt_left">Sun</td>
-<td headers="user_type" class="gt_row gt_left">Subscriber</td>
-<td headers="2013" class="gt_row gt_right">32,493</td>
-<td headers="2014" class="gt_row gt_right">160,719</td>
-<td headers="2015" class="gt_row gt_right">216,818</td>
-<td headers="2016" class="gt_row gt_right">269,682</td>
-<td headers="2017" class="gt_row gt_right">291,076</td></tr>
+    <tr><td headers="day" class="gt_row gt_left gt_striped">Sun</td>
+<td headers="user_type" class="gt_row gt_left gt_striped">Subscriber</td>
+<td headers="2013" class="gt_row gt_right gt_striped">32,493</td>
+<td headers="2014" class="gt_row gt_right gt_striped">160,719</td>
+<td headers="2015" class="gt_row gt_right gt_striped">216,818</td>
+<td headers="2016" class="gt_row gt_right gt_striped">269,682</td>
+<td headers="2017" class="gt_row gt_right gt_striped">291,076</td></tr>
     <tr><td headers="day" class="gt_row gt_left">Mon</td>
 <td headers="user_type" class="gt_row gt_left">Customer</td>
 <td headers="2013" class="gt_row gt_right">41,866</td>
@@ -1392,13 +1392,13 @@ $ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.7
 <td headers="2015" class="gt_row gt_right">106,276</td>
 <td headers="2016" class="gt_row gt_right">118,778</td>
 <td headers="2017" class="gt_row gt_right">106,774</td></tr>
-    <tr><td headers="day" class="gt_row gt_left">Mon</td>
-<td headers="user_type" class="gt_row gt_left">Subscriber</td>
-<td headers="2013" class="gt_row gt_right">64,042</td>
-<td headers="2014" class="gt_row gt_right">253,095</td>
-<td headers="2015" class="gt_row gt_right">340,172</td>
-<td headers="2016" class="gt_row gt_right">433,389</td>
-<td headers="2017" class="gt_row gt_right">472,221</td></tr>
+    <tr><td headers="day" class="gt_row gt_left gt_striped">Mon</td>
+<td headers="user_type" class="gt_row gt_left gt_striped">Subscriber</td>
+<td headers="2013" class="gt_row gt_right gt_striped">64,042</td>
+<td headers="2014" class="gt_row gt_right gt_striped">253,095</td>
+<td headers="2015" class="gt_row gt_right gt_striped">340,172</td>
+<td headers="2016" class="gt_row gt_right gt_striped">433,389</td>
+<td headers="2017" class="gt_row gt_right gt_striped">472,221</td></tr>
     <tr><td headers="day" class="gt_row gt_left">Tue</td>
 <td headers="user_type" class="gt_row gt_left">Customer</td>
 <td headers="2013" class="gt_row gt_right">32,807</td>
@@ -1406,13 +1406,13 @@ $ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.7
 <td headers="2015" class="gt_row gt_right">85,004</td>
 <td headers="2016" class="gt_row gt_right">78,180</td>
 <td headers="2017" class="gt_row gt_right">77,836</td></tr>
-    <tr><td headers="day" class="gt_row gt_left">Tue</td>
-<td headers="user_type" class="gt_row gt_left">Subscriber</td>
-<td headers="2013" class="gt_row gt_right">69,896</td>
-<td headers="2014" class="gt_row gt_right">270,355</td>
-<td headers="2015" class="gt_row gt_right">376,493</td>
-<td headers="2016" class="gt_row gt_right">463,519</td>
-<td headers="2017" class="gt_row gt_right">501,054</td></tr>
+    <tr><td headers="day" class="gt_row gt_left gt_striped">Tue</td>
+<td headers="user_type" class="gt_row gt_left gt_striped">Subscriber</td>
+<td headers="2013" class="gt_row gt_right gt_striped">69,896</td>
+<td headers="2014" class="gt_row gt_right gt_striped">270,355</td>
+<td headers="2015" class="gt_row gt_right gt_striped">376,493</td>
+<td headers="2016" class="gt_row gt_right gt_striped">463,519</td>
+<td headers="2017" class="gt_row gt_right gt_striped">501,054</td></tr>
     <tr><td headers="day" class="gt_row gt_left">Wed</td>
 <td headers="user_type" class="gt_row gt_left">Customer</td>
 <td headers="2013" class="gt_row gt_right">30,221</td>
@@ -1420,13 +1420,13 @@ $ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.7
 <td headers="2015" class="gt_row gt_right">84,947</td>
 <td headers="2016" class="gt_row gt_right">59,287</td>
 <td headers="2017" class="gt_row gt_right">61,801</td></tr>
-    <tr><td headers="day" class="gt_row gt_left">Wed</td>
-<td headers="user_type" class="gt_row gt_left">Subscriber</td>
-<td headers="2013" class="gt_row gt_right">66,828</td>
-<td headers="2014" class="gt_row gt_right">273,822</td>
-<td headers="2015" class="gt_row gt_right">385,337</td>
-<td headers="2016" class="gt_row gt_right">420,457</td>
-<td headers="2017" class="gt_row gt_right">481,108</td></tr>
+    <tr><td headers="day" class="gt_row gt_left gt_striped">Wed</td>
+<td headers="user_type" class="gt_row gt_left gt_striped">Subscriber</td>
+<td headers="2013" class="gt_row gt_right gt_striped">66,828</td>
+<td headers="2014" class="gt_row gt_right gt_striped">273,822</td>
+<td headers="2015" class="gt_row gt_right gt_striped">385,337</td>
+<td headers="2016" class="gt_row gt_right gt_striped">420,457</td>
+<td headers="2017" class="gt_row gt_right gt_striped">481,108</td></tr>
     <tr><td headers="day" class="gt_row gt_left">Thu</td>
 <td headers="user_type" class="gt_row gt_left">Customer</td>
 <td headers="2013" class="gt_row gt_right">33,599</td>
@@ -1434,13 +1434,13 @@ $ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.7
 <td headers="2015" class="gt_row gt_right">91,534</td>
 <td headers="2016" class="gt_row gt_right">67,437</td>
 <td headers="2017" class="gt_row gt_right">67,910</td></tr>
-    <tr><td headers="day" class="gt_row gt_left">Thu</td>
-<td headers="user_type" class="gt_row gt_left">Subscriber</td>
-<td headers="2013" class="gt_row gt_right">63,272</td>
-<td headers="2014" class="gt_row gt_right">269,220</td>
-<td headers="2015" class="gt_row gt_right">365,839</td>
-<td headers="2016" class="gt_row gt_right">434,845</td>
-<td headers="2017" class="gt_row gt_right">482,156</td></tr>
+    <tr><td headers="day" class="gt_row gt_left gt_striped">Thu</td>
+<td headers="user_type" class="gt_row gt_left gt_striped">Subscriber</td>
+<td headers="2013" class="gt_row gt_right gt_striped">63,272</td>
+<td headers="2014" class="gt_row gt_right gt_striped">269,220</td>
+<td headers="2015" class="gt_row gt_right gt_striped">365,839</td>
+<td headers="2016" class="gt_row gt_right gt_striped">434,845</td>
+<td headers="2017" class="gt_row gt_right gt_striped">482,156</td></tr>
     <tr><td headers="day" class="gt_row gt_left">Fri</td>
 <td headers="user_type" class="gt_row gt_left">Customer</td>
 <td headers="2013" class="gt_row gt_right">47,721</td>
@@ -1448,13 +1448,13 @@ $ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.7
 <td headers="2015" class="gt_row gt_right">116,893</td>
 <td headers="2016" class="gt_row gt_right">101,940</td>
 <td headers="2017" class="gt_row gt_right">96,453</td></tr>
-    <tr><td headers="day" class="gt_row gt_left">Fri</td>
-<td headers="user_type" class="gt_row gt_left">Subscriber</td>
-<td headers="2013" class="gt_row gt_right">67,643</td>
-<td headers="2014" class="gt_row gt_right">260,799</td>
-<td headers="2015" class="gt_row gt_right">338,585</td>
-<td headers="2016" class="gt_row gt_right">427,336</td>
-<td headers="2017" class="gt_row gt_right">458,204</td></tr>
+    <tr><td headers="day" class="gt_row gt_left gt_striped">Fri</td>
+<td headers="user_type" class="gt_row gt_left gt_striped">Subscriber</td>
+<td headers="2013" class="gt_row gt_right gt_striped">67,643</td>
+<td headers="2014" class="gt_row gt_right gt_striped">260,799</td>
+<td headers="2015" class="gt_row gt_right gt_striped">338,585</td>
+<td headers="2016" class="gt_row gt_right gt_striped">427,336</td>
+<td headers="2017" class="gt_row gt_right gt_striped">458,204</td></tr>
     <tr><td headers="day" class="gt_row gt_left">Sat</td>
 <td headers="user_type" class="gt_row gt_left">Customer</td>
 <td headers="2013" class="gt_row gt_right">90,575</td>
@@ -1462,13 +1462,13 @@ $ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.7
 <td headers="2015" class="gt_row gt_right">237,263</td>
 <td headers="2016" class="gt_row gt_right">214,573</td>
 <td headers="2017" class="gt_row gt_right">224,611</td></tr>
-    <tr><td headers="day" class="gt_row gt_left">Sat</td>
-<td headers="user_type" class="gt_row gt_left">Subscriber</td>
-<td headers="2013" class="gt_row gt_right">38,862</td>
-<td headers="2014" class="gt_row gt_right">175,384</td>
-<td headers="2015" class="gt_row gt_right">229,976</td>
-<td headers="2016" class="gt_row gt_right">287,592</td>
-<td headers="2017" class="gt_row gt_right">306,316</td></tr>
+    <tr><td headers="day" class="gt_row gt_left gt_striped">Sat</td>
+<td headers="user_type" class="gt_row gt_left gt_striped">Subscriber</td>
+<td headers="2013" class="gt_row gt_right gt_striped">38,862</td>
+<td headers="2014" class="gt_row gt_right gt_striped">175,384</td>
+<td headers="2015" class="gt_row gt_right gt_striped">229,976</td>
+<td headers="2016" class="gt_row gt_right gt_striped">287,592</td>
+<td headers="2017" class="gt_row gt_right gt_striped">306,316</td></tr>
   </tbody>
   
   
@@ -1477,16 +1477,16 @@ $ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.7
 </div>
 </div>
 </section>
-<section id="current-data-day" class="level3">
-<h3 class="anchored" data-anchor-id="current-data-day">Current Data: Day</h3>
+<section id="rental-patterns-by-day" class="level3">
+<h3 class="anchored" data-anchor-id="rental-patterns-by-day">Rental Patterns By Day</h3>
 <div class="cell" data-hash="case_study_cache/html/dayilyRentalPatter_bb6bbf05dd2ab3faa86256dd4cbb736a">
 <div class="cell-output-display">
 <p><img src="case_study_files/figure-html/dayilyRentalPatter-1.png" class="img-fluid" width="672"></p>
 </div>
 </div>
 </section>
-<section id="current-data-month" class="level3">
-<h3 class="anchored" data-anchor-id="current-data-month">Current Data: Month</h3>
+<section id="rental-patterns-by-month" class="level3">
+<h3 class="anchored" data-anchor-id="rental-patterns-by-month">Rental Patterns by Month</h3>
 <div class="cell">
 <div class="cell-output-display">
 <p><img src="case_study_files/figure-html/monthlyRentalPatterns-1.png" class="img-fluid" width="672"></p>
@@ -2005,19 +2005,9 @@ $ box       &lt;POLYGON [°]&gt; POLYGON ((-87.66251 41.6774..., POLYGON ((-87.7
 </div>
 </div>
 </section>
-<section id="use-percenatage-over-time-customers" class="level4">
-<h4 class="anchored" data-anchor-id="use-percenatage-over-time-customers">Use Percenatage Over Time: Customers</h4>
+<section id="use-percentage-over-time-customers" class="level4">
+<h4 class="anchored" data-anchor-id="use-percentage-over-time-customers">Use Percentage Over Time: Customers</h4>
 <div class="cell">
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">#| label: divvyGrowthCustomers</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">#| echo: false</span></span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">#| message: false</span></span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>divvy_growth_customers<span class="sc">|&gt;</span></span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="sc">-</span>user_type) <span class="sc">|&gt;</span></span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">gt</span>() <span class="sc">|&gt;</span></span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">cols_label</span>(<span class="at">month =</span> <span class="st">"Month"</span>,</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>             <span class="at">percent_growth =</span> <span class="st">"Percent Growth"</span>)<span class="sc">|&gt;</span> </span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>  <span class="fu">opt_stylize</span>(<span class="at">style =</span> <span class="dv">1</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output-display">
 
 <div id="qytjprswch" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
