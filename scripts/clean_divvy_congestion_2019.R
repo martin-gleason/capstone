@@ -46,6 +46,7 @@ congestion <- congestion %>%
   mutate(start_year = year(time))
 
 min(congestion$time)
+
 congestion_2018 <- congestion %>%
   filter(start_year >= 2018 &
            start_year < 2020)
@@ -54,17 +55,21 @@ congestion_2018 <- congestion %>%
 glimpse(divvy_2018)
 
 divvy_2018_from_geo <- divvy_2018 %>%
-  select(trip_id, from_longitude, from_latitude) %>%
+  select(trip_id, bike_id, from_station_id, from_longitude, from_latitude) %>%
   filter(!is.na(from_longitude) | !is.na(from_latitude)) %>%
   st_as_sf(coords = c("from_longitude", "from_latitude"),
            crs = 4326)
 
 divvy_2018_to_geo <- divvy_2018 %>%
-  select(trip_id, to_longitude, to_latitude) %>%
+  select(trip_id, bike_id, to_station_id, to_longitude, to_latitude) %>%
   filter(!is.na(to_longitude) | !is.na(to_latitude))%>%
   st_as_sf(coords = c("to_longitude", "to_latitude"),
            crs = 4326)
 
+
+divvy_station_name_id <- divvy_2018 %>%
+  select(from_station_id, from_station_name) %>%
+  distinct(from_station_id, .keep_all = TRUE)
 
 divvy_2018_from_geo %>%
   head(n = 100) %>%
@@ -103,3 +108,4 @@ write_rds(divvy_2018_data, here::here("inputs", "divvy_2018_data.RDS"))
 write_rds(divvy_2018_from_geo, here::here("inputs", "divvy_2018_from_geo.RDS"))
 write_rds(divvy_2018_to_geo, here::here("inputs", "divvy_2018_to_geo.RDS"))
 write_csv(historical_divvy_data, here::here("outputs", "historical_divvy_data.csv"))
+write_rds(divvy_station_name_id, here::here("inputs", "divvy_station_name_id.RDS"))

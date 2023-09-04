@@ -27,9 +27,14 @@ editor: visual
 library(tidyverse)
 
 #source(here::here("scripts", "clean_divvy_congestion_2019.R"))
-divvy_2018 <- readRDS(here::here("inputs", "divvy_2018_data.RDS"))
-congestion_2018 <- read_rds(here::here("inputs", "congestion_2018.RDS"))
-congestion_geos <- source(here::here("scripts", "congestion_geos.R"))
+divvy_2018 <- readRDS(here::here("inputs", 
+                                 "divvy_2018_data.RDS"))
+congestion_2018 <- read_rds(here::here("inputs", 
+                                       "congestion_2018.RDS"))
+congestion_geos <- source(here::here("scripts", 
+                                     "congestion_geos.R"))
+divvy_stations <- read_rds(here::here("inputs", 
+                                      "divvy_station_name_id.RDS"))
 
 total_rides <- divvy_2018 |> 
   distinct(trip_id) |>
@@ -40,6 +45,13 @@ total_observations <- nrow(congestion_2018) %>%
 
 divvy_2018 <- divvy_2018 %>% 
     filter(start_time >= min(congestion_2018$time))
+
+divvy_from_counts <- divvy_2018 %>%
+  select(start_time, from_station_id, bike_id, user_type) 
+
+divvy_to_counts <- divvy_2018 %>%
+  select(start_time, to_station_id, bike_id, user_type) 
+
 ```
 
 # Summary
@@ -418,7 +430,11 @@ divvy_growth_projections %>%
 
 ```
 
+Each data viz clearly shows patterns of ridership, for subscribers and one-time riders. OF particular note are the spikes in Customer ridership in December, January, and April.
+
 ### Congestion
+
+Chicago measures congestion in the following geographic areas.
 
 ```{r}
 #| label: congestionZone
@@ -431,6 +447,22 @@ library(leaflet)
 congestion_geos <- source(here::here("scripts", "congestion_geos.R"))
 
 congestion_zone
+
+```
+
+Plotting `r format(total_rides, big.mark=",")` rides on a map is not the best way to assess the relationship in the congestion zones.
+
+```{r}
+#| label: divvyRides
+#| cache: true
+#| echo: false
+
+divvy_from_counts %>%
+  mutate(time = format(start_time, format = "%H:%M")) %>%
+  filter(time >= "04:30" & time <= "08:30")  %>%
+  mutate(weekday = wday(start_time, label = TRUE)) %>%
+  head(10) %>%
+  gt::gt()
 
 ```
 

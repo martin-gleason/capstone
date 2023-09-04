@@ -111,4 +111,33 @@ divvy_growth_projections_subscriber <- divvy_growth_projections %>%
 
 divvy_growth_projections_customer <- divvy_growth_projections %>%
   filter(user_type == "Customer") %>%
-  mutate(percent_growth = ((`2019` - `2018`) / `2018`) * 100) 
+  mutate(percent_growth = ((`2019` - `2018`) / `2018`) * 100)
+
+
+# aggregate stations ------------------------------------------------------
+divvy_from_counts <- divvy_2018 %>%
+  select(start_time, from_station_id, user_type) 
+
+divvy_to_counts <- divvy_2018 %>%
+  select(start_time, to_station_id, user_type) 
+
+%>%
+  mutate(weekday = wday(start_time, label = TRUE)) %>%
+  group_by(from_station_id, user_type, weekday) %>%
+  summarize(n = n()) %>%
+  arrange(desc(n)) %>%
+  ungroup()
+
+
+format(divvy_2018$start_time, format = "%H:%M")
+
+divvy_ride_time <- divvy_2018 %>%
+  select(from_station_id, user_type, start_time) %>%
+  mutate(time = format(start_time, format = "%H:%M"))
+
+morning_rush <- divvy_ride_time %>%
+  filter(time >= "04:30" & time <= "08:30")  %>%
+  mutate(weekday = wday(start_time, label = TRUE))
+
+afternoon_rush <- divvy_ride_time %>%
+  filter(time >= "16:30" & time <= "19:00")
