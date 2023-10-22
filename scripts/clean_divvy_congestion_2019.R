@@ -4,6 +4,7 @@ library(RSocrata)
 library(janitor)
 library(sf)
 library(leaflet)
+library(lubridate)
 
 #reading and cleaning divvy
 divvy <- read_csv(here::here("inputs", "Divvy_Trips.csv")) %>%
@@ -100,8 +101,59 @@ historical_divvy_data %>%
   geom_bar(stat = "identity", position = "dodge") +
   facet_wrap(~start_year) +
   theme_minimal()
+  
 
-### RDS ####
+# to and from morning rush---------------------------------------------------------
+
+test <- head(divvy_2018, 100)
+
+wday(test$start_time, label = TRUE)
+
+work_day <- divvy_2018 %>%
+  mutate(day = wday(start_time, label = TRUE),
+         )
+
+sundays <- work_day %>%
+  filter(day == "Sun") %>%
+  nrow()
+
+saturday <- work_day %>%
+  filter(day == "Sat") %>%
+  nrow()
+
+weekend <- saturday + sundays
+
+
+no_weekends <- work_day %>%
+  filter(day != "Sat") %>%
+  filter(day != "Sun")
+
+no_weekends %>% nrow()
+
+
+test %>%
+  mutate(time = hms::as_hms(paste0(hour(start_time), ":", minute(start_time),
+                              ":", seconds(start_time)))) %>%
+  filter(between(time, hms::as_hms("06:41:00"), hms::as_hms("06:48:00"))) %>%
+  #filter(time <= hms::as_hms("06:41:00") & time <= hms::as_hms("06:48:00")) %>%
+  select(time) %>%
+  View()
+
+morning_rush <- no_weekends %>%
+  mutate(time = hms::as_hms(paste0(hour(start_time), ":", 
+                                   minute(start_time),":", 
+                                   seconds(start_time))))  %>%
+  filter(between(time, hms::as_hms("05:00:00"), hms::as_hms("08:01:00"))) 
+
+evening_rush <- no_weekends %>%
+  mutate(time = hms::as_hms(paste0(hour(start_time), ":", 
+                                   minute(start_time),":", 
+                                   seconds(start_time))))  %>%
+  filter(between(time, hms::as_hms("16:00:00"), hms::as_hms("18:01:00"))) 
+  
+
+# RDS  --------------------------------------------------------------------
+
 
 write_rds(congestion_2018, here::here("inputs", "congestion_2018.RDS"))
 write_rds(divvy_2018_data, here::here("inputs", "divvy_2018_data.RDS"))
@@ -109,3 +161,5 @@ write_rds(divvy_2018_from_geo, here::here("inputs", "divvy_2018_from_geo.RDS"))
 write_rds(divvy_2018_to_geo, here::here("inputs", "divvy_2018_to_geo.RDS"))
 write_csv(historical_divvy_data, here::here("outputs", "historical_divvy_data.csv"))
 write_rds(divvy_station_name_id, here::here("inputs", "divvy_station_name_id.RDS"))
+write_rds(morning_rush, here::here("inputs", "morning_rush.RDS"))
+write_rds(evening_rush, here::here("inputs", "evening_rush.RDS"))

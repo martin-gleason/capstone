@@ -205,6 +205,7 @@ Best practice with R is to avoid loops. However, in order to create a bounding b
 #| label: divvySF
 #| echo: true
 #| warning: false
+#| cache: true
 
 divvy_from <- read_rds(here::here("inputs", "divvy_2018_from_geo.RDS"))
 divvy_to <- read_rds(here::here("inputs", "divvy_2018_to_geo.RDS"))
@@ -230,7 +231,6 @@ Divvy has three kinds of users: Customer, Dependent, and Subscriber. A customer 
 #| column: body
 #| fig-width: 15
 #| fig-height: 15
-#| fig-format: retina
 #| fig-alt: "A bar graph showing the number of riders per weekday from 2013 - 2017"
 
 library(tidyverse)
@@ -444,13 +444,16 @@ library(sf)
 library(leaflet)
 
 
+
 congestion_geos <- source(here::here("scripts", "congestion_geos.R"))
 
-congestion_zone
+congestion_zone 
+
+
 
 ```
 
-Plotting `r format(total_rides, big.mark=",")` rides on a map is not the best way to assess the relationship in the congestion zones.
+Plotting `r format(total_rides, big.mark=",")` rides on a map is not the best way to assess the relationship in the congestion zones. A more feasible solution, especially at this stage of the project, is to focus on Divvy usage during Chicago Rush Hour -- approximately 5am - 8:30am.
 
 ```{r}
 #| label: divvyRides
@@ -461,10 +464,61 @@ divvy_from_counts %>%
   mutate(time = format(start_time, format = "%H:%M")) %>%
   filter(time >= "04:30" & time <= "08:30")  %>%
   mutate(weekday = wday(start_time, label = TRUE)) %>%
+  select(-start_time) %>%
   head(10) %>%
-  gt::gt()
+  gt::gt() %>%
+  gt::cols_label(from_station_id = "Starting Station ID",
+                 bike_id = "Bike ID",
+                 user_type = "Customer Type",
+                 time = "Time",
+                 weekday = "Weekday") |> 
+  gt::tab_header(title = "First Ten Riders",
+                 subtitle = "Source: Chicago Open Data Portal, 2018 - 2019") |>
+  opt_stylize(style = 1)
 
 ```
+
+The analysis consists of the following: - How many rides occur per Congestion Zone between the hours of 5am - 8am for the morning commute - How many rides occur per congestion zone between the hours of 4pm - 6pm for the evening commute.
+
+```{r}
+#| label: divvy_in_zone
+#| warning: false
+#| echo: false
+
+library(tidyverse)
+library(sf)
+library(here)
+library(leaflet)
+library(geojsonsf)
+
+
+station_names <- read_rds(here("inputs", "divvy_station_name_id.RDS"))
+station_locations <- read_rds(here("inputs", "divvy_station_geo.RDS"))
+
+stations <- station_names %>% 
+  right_join(station_locations, 
+             by = c("from_station_id" = "station_id")) %>%
+  st_as_sf() 
+
+stations_json <- stations %>%
+  sf_geojson()
+
+
+congestion_zone %>%
+  addGeoJSON(stations_json)
+
+
+```
+
+-   from
+
+-   to
+
+-   provide counts per zone
+
+-   From
+
+-   To
 
 -   What are the average speeds in congestion regions during weekday rush hour?
 
