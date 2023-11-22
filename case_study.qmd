@@ -430,7 +430,7 @@ divvy_growth_projections %>%
 
 ```
 
-Each data viz clearly shows patterns of ridership, for subscribers and one-time riders. OF particular note are the spikes in Customer ridership in December, January, and April.
+Each data viz clearly shows patterns of ridership, for subscribers and one-time riders. Of particular note are the spikes in Customer ridership in December, January, and April.
 
 ### Congestion
 
@@ -478,22 +478,38 @@ divvy_from_counts %>%
 
 ```
 
-The analysis consists of the following: - How many rides occur per Congestion Zone between the hours of 5am - 8am for the morning commute - How many rides occur per congestion zone between the hours of 4pm - 6pm for the evening commute.
+The analysis consists of the following:
+
+-   Where are the Divvy stations?
+-   How many Divvy Stations are in each congestion zone?
+-   How many rides occur per Congestion Zone between the hours of 5am - 8am for the morning commute.
+-   How many rides occur per congestion zone between the hours of 4pm - 6pm for the evening commute.
+
+Mapping this data, which will have tens of thousands of records at a minimum, will take a significant amount of resources. Without significant front-end know-how, those resources will slow down any browser viewing the data. Summarizing the data, by month, and showing the highest trafficked stops is best way to represent the data.
+
+### Plotting Divvy Stations
 
 ```{r}
 #| label: divvy_in_zone
 #| warning: false
 #| echo: false
-
+#| cache: true
+#| message: false
 library(tidyverse)
 library(sf)
 library(here)
 library(leaflet)
 library(geojsonsf)
-
+bicycle_blue <- makeAwesomeIcon(icon = "bicycle",
+                                library = "fa",
+                                markerColor = "lightgray",
+                                iconColor = "#0006b1")
 
 station_names <- read_rds(here("inputs", "divvy_station_name_id.RDS"))
 station_locations <- read_rds(here("inputs", "divvy_station_geo.RDS"))
+
+evening_rush <- read_rds(here("inputs", "evening_rush.RDS"))
+morning_rush <- read_rds(here("inputs", "morning_rush.RDS"))
 
 stations <- station_names %>% 
   right_join(station_locations, 
@@ -503,9 +519,58 @@ stations <- station_names %>%
 stations_json <- stations %>%
   sf_geojson()
 
+map_of_regions %>%
+  addAwesomeMarkers(data = stations,
+             lng = st_coordinates(stations$geometry)[ ,1],
+             lat = st_coordinates(stations$geometry)[ ,2],
+             label = stations$from_station_name,
+             icon = bicycle_blue)
 
-congestion_zone %>%
-  addGeoJSON(stations_json)
+
+
+
+
+
+```
+
+Zooming in on this map will show where bikes stations are in the city -- and this feature makes this map worth while. If this was a static map, a better visualization would be displaying the counts of stations in the per zone.
+
+```{r}
+#| label: count_per_zone
+#| message: false
+#| column: screen
+#| out-width: 100%
+#| fig-format: svg
+library(tidyverse)
+library(leaflet)
+library(mapboxapi)
+library(ggspatial)
+
+
+token = (read_file("keys/mapbox.txt"))
+mb_access_token(token)
+
+counts <- congestion_regions %>%
+  mutate(count = lengths(st_intersects(box, stations$geometry))) %>%
+  st_as_sf()
+
+chicago <- ggplot() +
+  layer_static_mapbox(
+    location = congestion_regions$box,
+    username = "mapbox",
+    style_id = "streets-v11"
+)
+
+chicago + 
+  geom_sf(data = counts,
+          aes(fill = count)) +
+  viridis::scale_fill_viridis() +
+  geom_sf_label(data = counts,
+            aes(label = region_id),
+            size = 2) +
+  labs(title = "Divvy Stations per Chicago Area Congestion Zone",
+         fill = "Amount of Divvy Stations") +
+  theme_minimal()
 
 
 ```

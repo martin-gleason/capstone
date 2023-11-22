@@ -8,3 +8,5 @@ Divvy_Trips.csv
 inputs/
 case_study_cache/
 /.quarto/
+/keys/*
+*.txt
