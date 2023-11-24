@@ -459,6 +459,7 @@ Plotting `r format(total_rides, big.mark=",")` rides on a map is not the best wa
 #| label: divvyRides
 #| cache: true
 #| echo: false
+library(gt)
 
 divvy_from_counts %>%
   mutate(time = format(start_time, format = "%H:%M")) %>%
@@ -526,11 +527,6 @@ map_of_regions %>%
              label = stations$from_station_name,
              icon = bicycle_blue)
 
-
-
-
-
-
 ```
 
 Zooming in on this map will show where bikes stations are in the city -- and this feature makes this map worth while. If this was a static map, a better visualization would be displaying the counts of stations in the per zone.
@@ -570,33 +566,179 @@ chicago +
             size = 2) +
   labs(title = "Divvy Stations per Chicago Area Congestion Zone",
          fill = "Amount of Divvy Stations") +
-  theme_minimal()
+  theme_void()
 
 
 ```
 
--   from
+This map shows that the bulk of Divvy stations are in the north side of Chicago, and that south of the Loop, the number of stations decreases dramatically.
 
--   to
+This data, as a chart, supports this:
 
--   provide counts per zone
+```{r}
+#| label: divvy-chart
+#| message: false
+library(gt)
+library(tidyverse)
 
--   From
+counts %>% 
+  select(region_id, region, count) %>%
+  arrange(desc(count)) %>%
+  st_drop_geometry() %>%
+  gt() %>%  
+  cols_label(region_id = "Region ID",
+    region = "Congestion Zone Name Name",
+             count = "Number of Divvy Stations per Zone") |> 
+  gt::tab_header(title = "Divvy Stations per Congestion Zone",
+                 subtitle = "Source: Chicago Open Data Portal, 2018 - 2019") %>%
+  opt_stylize(style = 1)
 
--   To
+```
 
--   What are the average speeds in congestion regions during weekday rush hour?
+I do have some concern about this data: The Zone "Downtown-Lakefront" is on the far south west side of Chicago. While other names correspond, roughly, to the neighborhoods covered by the zone, Downtown-Lakefront does not. Nor does Rogers - Park-West Ridge or Hyde Park - Kenwood - Woodlawn. The metadata of this data set does not explain this clearly, and before this is presented as fact, work to verify these shapes should be completed. These concerns aside, the take away is clear: There are neighborhoods in Chicago that do not have a Divvy station.
 
--   How many divvy rides begin or end in a congestion region?
+The method used to show Divvy Stations per zone can also be used to show where most trips start and where they end.
+
+### Where do the Morning Rush Trips Start
+
+```{r}
+#| label: divvy_morning_from
+#| messages: false
+#| out-width: 100%
+#| fig-format: svg
+#| cache: true
+library(tidyverse)
+
+morning_rush_from_sf <- morning_rush %>%
+  select(from_station_id, from_station_name, from_latitude, from_longitude) %>%
+  filter(!is.na(from_longitude)) %>%
+  st_as_sf(coords = c("from_longitude", "from_latitude"), crs = 4326)
+
+morning_rush_from_counts <- congestion_regions %>%
+  mutate(counts = lengths(st_intersects(congestion_regions$box, 
+                                       morning_rush_from_sf$geometry)))  %>%
+  arrange(desc(counts)) %>%
+  st_as_sf()
+
+chicago +
+  geom_sf(data = morning_rush_from_counts,
+          aes(fill = counts)) +
+  viridis::scale_fill_viridis() +
+   geom_sf_label(data = counts,
+            aes(label = region_id),
+            size = 2) +
+  labs(title = "Divvy Stations per Chicago Area Starting in A Congestion Zone",
+         fill = "Number of Rides") +
+  theme_void()
+
+```
+
+### Where do the Morning Rush Trips End
+
+```{r}
+#| label: divvy_morning_to
+#| messages: false
+#| out-width: 100%
+#| fig-format: svg
+#| cache: true
+library(tidyverse)
+
+morning_rush_to_sf <- morning_rush %>%
+  select(to_station_id, to_station_name, to_latitude, to_longitude) %>%
+  filter(!is.na(to_longitude)) %>%
+  st_as_sf(coords = c("to_longitude", "to_latitude"), crs = 4326)
+
+morning_rush_to_counts <- congestion_regions %>%
+  mutate(counts = lengths(st_intersects(congestion_regions$box, 
+                                       morning_rush_to_sf$geometry)))  %>%
+  arrange(desc(counts)) %>%
+  st_as_sf()
+
+chicago +
+  geom_sf(data = morning_rush_to_counts,
+          aes(fill = counts)) +
+  viridis::scale_fill_viridis() +
+   geom_sf_label(data = counts,
+            aes(label = region_id),
+            size = 2) +
+  labs(title = "Divvy Stations per Chicago Area Ending in A Congestion Zone",
+         fill = "Number of Rides") +
+  theme_void()
+
+```
+
+### Where do Evening Rush Rides Start
+
+```{r}
+#| label: divvy_evening_from
+#| messages: false
+#| out-width: 100%
+#| fig-format: svg
+#| cache: true
+library(tidyverse)
+
+evening_rush_sf <- evening_rush %>%
+  select(from_station_id, from_station_name, from_latitude, from_longitude) %>%
+  filter(!is.na(from_longitude)) %>%
+  st_as_sf(coords = c("from_longitude", "from_latitude"), crs = 4326)
+
+evening_rush_counts <- congestion_regions %>%
+  mutate(counts = lengths(st_intersects(congestion_regions$box, 
+                                       evening_rush_sf$geometry)))  %>%
+  arrange(desc(counts)) %>%
+  st_as_sf()
+
+chicago +
+  geom_sf(data = evening_rush_counts,
+          aes(fill = counts)) +
+  viridis::scale_fill_viridis() +
+   geom_sf_label(data = counts,
+            aes(label = region_id),
+            size = 2) +
+  labs(title = "Divvy Stations per Chicago Area Starting Congestion Zone",
+         fill = "Amount of Divvy Stations") +
+  theme_void()
+
+```
+
+### Where do the Evening Rush Trips End
+
+```{r}
+#| label: divvy_evening_to
+#| messages: false
+#| out-width: 100%
+#| fig-format: svg
+#| cache: true
+library(tidyverse)
+
+evening_rush_to_sf <- evening_rush %>%
+  select(to_station_id, to_station_name,to_latitude, to_longitude) %>%
+  filter(!is.na(to_longitude)) %>%
+  st_as_sf(coords = c("to_longitude", "to_latitude"), crs = 4326)
+
+morning_rush_to_counts <- congestion_regions %>%
+  mutate(counts = lengths(st_intersects(congestion_regions$box, 
+                                      evening_rush_to_sf$geometry)))  %>%
+  arrange(desc(counts)) %>%
+  st_as_sf()
+
+chicago +
+  geom_sf(data = morning_rush_to_counts,
+          aes(fill = counts)) +
+  viridis::scale_fill_viridis() +
+   geom_sf_label(data = counts,
+            aes(label = region_id),
+            size = 2) +
+  labs(title = "Divvy Stations per Chicago Area Ending Congestion Zone",
+         fill = "Amount of Divvy Stations") +
+  theme_void()
+
+```
+
+The visualizations show that the bulk of Divvy rides occur in Zone 15, which is Bridgeport-McKinley-Lower West, with Zone 10, Humboldt-Garfield Prk E/W being a popular morning rush start and evening rush end time. The data suggests that both Zone 10 and 15 deserve additional study for commuters. Determining the impact of divvy riders on congestion would depend on congestion numbers from those same zones.
 
 # Recommendations
 
-*Bold* **italic**
-
--   One
-    -   Two
-        -   Three
-
-## 
+The next step in this analysis is to compare, per month, congestion zone 10 and 15 divvy ridership with commute times in the same zones. An additional recommendation would be to examine the relationship between CTA ridership and Divvy Ridership. Zone 15 covers a significant portion of Chicago's business and financial districts, which contains a high number of "L" stops and Bus stations. Given that a number of Divvy Users commute within Zone 15, these users may also be using the CTA to get to the loop and using Divvy for the last few miles of their stop.
 
 [Divvy launched in chicago on 6/29/2013](https://en.wikipedia.org/wiki/Divvy)
