@@ -374,7 +374,7 @@ divvy_growth_customers <- divvy_growth_projections_wide %>%
 
 ```
 
-#### Use Percenatage Over Time: Subscribers
+#### Use Percentage Over Time: Subscribers
 
 ```{r}
 #| label: subscriberChart
@@ -741,4 +741,4 @@ The visualizations show that the bulk of Divvy rides occur in Zone 15, which is 
 
 The next step in this analysis is to compare, per month, congestion zone 10 and 15 divvy ridership with commute times in the same zones. An additional recommendation would be to examine the relationship between CTA ridership and Divvy Ridership. Zone 15 covers a significant portion of Chicago's business and financial districts, which contains a high number of "L" stops and Bus stations. Given that a number of Divvy Users commute within Zone 15, these users may also be using the CTA to get to the loop and using Divvy for the last few miles of their stop.
 
-[Divvy launched in chicago on 6/29/2013](https://en.wikipedia.org/wiki/Divvy)
+[Divvy launched in Chicago on 6/29/2013](https://en.wikipedia.org/wiki/Divvy)
